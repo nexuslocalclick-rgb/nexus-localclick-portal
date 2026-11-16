@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Local Click - Portal</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #ff5e3a; --text: #f1f5f9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background-color: var(--card); padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; }
+        h1 { color: var(--accent); margin-bottom: 1rem; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; }
+        input, select { background-color: #334155; color: white; }
+        button { background-color: var(--accent); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #e04b2b; }
+        .hidden { display: none; }
+        .stats { background-color: #334155; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: left; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- VISTA 1: LOGIN -->
+    <div id="login-view">
+        <h1>Nexus Local Click</h1>
+        <p>Ingresa tu Token de acceso</p>
+        <input type="text" id="token-input" placeholder="lc_taller_8f9a2b...">
+        <button onclick="login()">Entrar al Portal</button>
+        <p id="login-error" style="color: #ef4444; font-size: 0.9em;"></p>
+    </div>
+
+    <!-- VISTA 2: DASHBOARD -->
+    <div id="dashboard-view" class="hidden">
+        <h1 id="welcome-name">Bienvenido</h1>
+        <div class="stats">
+            <p><strong>Rol:</strong> <span id="user-rol"></span></p>
+            <p><strong>Plan:</strong> <span id="user-plan"></span></p>
+            <p><strong>Consultas hoy:</strong> <span id="user-quota"></span></p>
+        </div>
+        <button onclick="alert('Próximamente: Convertidor de Archivos')">📁 Convertir Archivos</button>
+        <button onclick="alert('Próximamente: Asistente IA')">🤖 Consultar Asistente</button>
+        <button onclick="logout()" style="background-color: #64748b; margin-top: 20px;">Cerrar Sesión</button>
+    </div>
+</div>
+
+<script>
+    // URL DE TU WEBHOOK DE N8N (Asegúrate de cambiarla por la real)
+    const WEBHOOK_VALIDAR = 'https://core.localclick.com.mx/webhook/validar-token';
+
+    // Al cargar la página, revisamos si ya hay un token guardado
+    window.onload = function() {
+        const savedToken = localStorage.getItem('lc_token');
+        if (savedToken) {
+            validarToken(savedToken);
+        }
+    };
+
+    function login() {
+        const token = document.getElementById('token-input').value;
+        if (token) validarToken(token);
+    }
+
+    async function validarToken(token) {
+        try {
+            // Hacemos la petición al Webhook de n8n
+            const response = await fetch(WEBHOOK_VALIDAR, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token })
+            });
+            
+            const data = await response.json();
+
+            if (data.success) {
+                // Guardamos el token en el navegador para no pedirlo cada vez
+                localStorage.setItem('lc_token', token);
+                
+                // Llenamos los datos del dashboard
+                document.getElementById('welcome-name').innerText = "Hola, " + data.nombre_empresa;
+                document.getElementById('user-rol').innerText = data.rol;
+                document.getElementById('user-plan').innerText = data.plan;
+                document.getElementById('user-quota').innerText = data.consultas_restantes + " disponibles";
+                
+                // Mostramos el dashboard y ocultamos el login
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('dashboard-view').classList.remove('hidden');
+            } else {
+                document.getElementById('login-error').innerText = data.message || "Token inválido";
+            }
+        } catch (error) {
+            document.getElementById('login-error').innerText = "Error de conexión con el servidor.";
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('lc_token');
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
