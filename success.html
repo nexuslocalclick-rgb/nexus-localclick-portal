@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Exitoso - Nexus Local Click</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #ff5e3a; --text: #f1f5f9; --warning: #f59e0b; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { background-color: var(--card); padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 500px; text-align: center; }
+        h1 { color: var(--accent); margin-bottom: 10px; font-size: 1.8em; }
+        p { font-size: 1em; line-height: 1.5; color: #cbd5e1; }
+        
+        .token-box { background-color: #0f172a; border: 2px dashed var(--accent); padding: 15px; border-radius: 8px; margin: 20px 0; display: flex; justify-content: space-between; align-items: center; }
+        .token-text { font-family: monospace; font-size: 1.1em; color: #fff; word-break: break-all; text-align: left; }
+        .copy-btn { background-color: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .copy-btn:hover { background-color: #e04b2b; }
+
+        .warning-box { background-color: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--warning); padding: 15px; text-align: left; border-radius: 4px; margin-bottom: 25px; }
+        .warning-box h3 { color: var(--warning); margin: 0 0 5px 0; font-size: 1.1em; }
+        .warning-box p { color: #fcd34d; margin: 0; font-size: 0.9em; }
+
+        .btn-access { display: inline-block; width: 100%; padding: 15px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.1em; transition: 0.3s; box-sizing: border-box; }
+        .btn-access:hover { background-color: #2563eb; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>¡Bienvenido a Local Click!</h1>
+    <p>Tu cuenta ha sido creada exitosamente. Aquí tienes tu Token de acceso único:</p>
+
+    <!-- Aquí va el token dinámico -->
+    <div class="token-box">
+        <span class="token-text" id="token-display">cargando-token...</span>
+        <button class="copy-btn" onclick="copyToken()">Copiar</button>
+    </div>
+
+    <div class="warning-box">
+        <h3>⚠️ ¡Guarda este Token de forma segura!</h3>
+        <p>Este Token es <strong>intransferible y personal</strong>. Es tu acceso único a tu panel de control. <strong>No lo compartas con nadie</strong> y guárdalo en un lugar seguro (como tu gestor de contraseñas). Si lo pierdes, deberás solicitar un nuevo registro.</p>
+    </div>
+
+    <a href="https://nexus.localclick.com.mx/login" class="btn-access">Ir a mi Panel de Control</a>
+</div>
+
+<script>
+    // Este script lee el token que viene en la URL y lo muestra en pantalla
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+        document.getElementById('token-display').innerText = token;
+    } else {
+        document.getElementById('token-display').innerText = "Error: No se recibió el token.";
+    }
+
+    function copyToken() {
+        const tokenText = document.getElementById('token-display').innerText;
+        navigator.clipboard.writeText(tokenText).then(() => {
+            alert('¡Token copiado al portapapeles!');
+        });
+    }
+</script>
+
+</body>
+</html>
