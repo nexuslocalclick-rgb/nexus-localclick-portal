@@ -51,7 +51,7 @@ small{color:var(--muted);display:block;margin-top:6px}
 const API='https://core.localclick.com.mx/webhook/portal-consumir'; // servidor de n8n
 // Las imágenes se convierten en el navegador. Cuando exista el flujo "portal-consumir" en n8n, cambia a true
 // para que cada conversión descuente una consulta del plan.
-const CONTAR=false;
+const CONTAR=true;
 const $=s=>document.querySelector(s);
 const CFG={
  imagen:{accept:'image/*',max:25,info:'Cualquier imagen (JPG, PNG, WEBP, GIF…). Máximo 25 MB.',priv:'Tus imágenes se convierten en tu dispositivo: no se suben a ningún servidor.'},
