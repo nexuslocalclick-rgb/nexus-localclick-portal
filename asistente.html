@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asistente de IA · Nexus Local Click</title>
+<style>
+:root{--bg:#0a0b1e;--card:rgba(255,255,255,.06);--bd:rgba(255,255,255,.14);--tx:#f1f2ff;--mt:#9a9cc4;--ac:#7c6cff}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font:15px system-ui,sans-serif;color:var(--tx);background:radial-gradient(ellipse at top,#243a7a,#0a0b1e 60%) var(--bg);padding:16px}
+.w{max-width:720px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+button,a{font:inherit}
+.btn{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:9px 14px;cursor:pointer;text-decoration:none}
+.btn.p{background:var(--ac);border-color:var(--ac)}
+.btn.on{border-color:var(--ac)}
+.btn:disabled{opacity:.5}
+.chip{border:1px solid var(--bd);border-radius:999px;padding:6px 12px;background:var(--card);font-size:13px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
+label{display:block;margin:10px 0 4px;color:var(--mt);font-size:13px}
+input,textarea{width:100%;background:rgba(0,0,0,.3);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:10px;font:inherit}
+textarea{min-height:110px;resize:vertical}
+#msgs{height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.m{max-width:85%;padding:9px 12px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.u{align-self:flex-end;background:var(--ac)}
+.b{align-self:flex-start;background:rgba(255,255,255,.1)}
+.row{display:flex;gap:8px}.row input{flex:1}
+small{color:var(--mt)}
+.hide{display:none}
+</style></head><body><div class="w">
+<div class="top"><a class="btn" href="/">← Panel</a><span class="chip">Consultas disponibles hoy: <b id="rest">…</b></span></div>
+<div class="tabs"><button class="btn on" id="t1">Chat</button><button class="btn" id="t2">Mi negocio</button></div>
+
+<div class="card" id="v1">
+<div id="msgs"></div>
+<div class="row"><input id="q" maxlength="1000" placeholder="Pregunta algo de tu negocio"><button class="btn p" id="send">Enviar</button></div>
+</div>
+
+<div class="card hide" id="v2">
+<label>Nombre del negocio</label><input id="negocio" maxlength="120">
+<label>Giro (por ejemplo: papelería, carnicería)</label><input id="giro" maxlength="120">
+<label>Nombre del asistente (opcional)</label><input id="nombre_agente" maxlength="60">
+<label>Instrucciones: tono, qué debe y qué no debe hacer</label><textarea id="instrucciones" maxlength="3000"></textarea>
+<label>Información del negocio: productos, precios, horarios. Pega el texto o sube un .txt</label>
+<textarea id="documento" maxlength="30000"></textarea>
+<input type="file" id="file" accept=".txt,text/plain"><small id="kb"></small>
+<p><button class="btn p" id="save">Guardar</button> <small id="st"></small></p>
+</div></div>
+
+<script>
+const API='https://core.localclick.com.mx/webhook/asistente';
+const TOKEN_KEYS=['nexus_token','token']; // cambia si el panel guarda el token con otro nombre
+const $=i=>document.getElementById(i);
+const F=['negocio','giro','nombre_agente','instrucciones','documento'];
+const tok=()=>{for(const k of TOKEN_KEYS){const v=localStorage.getItem(k)||sessionStorage.getItem(k);if(v)return v}return''};
+if(!tok())location.href='/';
+
+async function call(accion,extra){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok(),accion,...extra})});
+  const d=await r.json();
+  if(d.error==='sesion'){location.href='/';throw 0}
+  return d}
+const setRest=n=>$('rest').textContent=n;
+const kb=()=>$('kb').textContent=(new Blob([$('documento').value]).size/1024).toFixed(1)+' KB de 30 KB';
+function add(t,c){const d=document.createElement('div');d.className='m '+c;d.textContent=t;$('msgs').append(d);$('msgs').scrollTop=1e9;return d}
+function tab(n){$('v1').classList.toggle('hide',n!=1);$('v2').classList.toggle('hide',n!=2);$('t1').classList.toggle('on',n==1);$('t2').classList.toggle('on',n==2)}
+$('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
+$('documento').oninput=kb;
+
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  if(f.size>100000){$('st').textContent='El archivo es muy grande. Máximo 30 KB de texto.';return}
+  const r=new FileReader();r.onload=()=>{$('documento').value=String(r.result).slice(0,30000);kb()};r.readAsText(f)};
+
+$('save').onclick=async()=>{const c={};F.forEach(k=>c[k]=$(k).value);$('st').textContent='Guardando…';
+  try{const d=await call('config_save',{config:c});
+    $('st').textContent=d.negocio!==undefined?'Guardado ✓':'No se pudo guardar. Intenta de nuevo.'}
+  catch(e){$('st').textContent='No se pudo guardar. Revisa tu conexión.'}};
+
+async function send(){const q=$('q').value.trim();if(!q)return;
+  $('q').value='';add(q,'u');const w=add('…','b');$('send').disabled=true;
+  try{const d=await call('chat',{mensaje:q});
+    if(d.respuesta){w.textContent=d.respuesta;setRest(d.restantes)}
+    else w.textContent=d.error==='cuota'?'Ya usaste tus consultas de hoy. Se renuevan mañana.':'No pude responder ahora. Intenta en unos minutos; no se descontó tu consulta.'}
+  catch(e){w.textContent='Sin conexión. Intenta de nuevo.'}
+  $('send').disabled=false}
+$('send').onclick=send;
+$('q').onkeydown=e=>{if(e.key==='Enter')send()};
+
+(async()=>{try{const d=await call('config_get');
+  setRest(Math.max(0,d.limite-d.usadas));F.forEach(k=>$(k).value=d[k]||'');kb();
+  if(!d.negocio){tab(2);$('st').textContent='Cuéntanos de tu negocio y guarda para empezar.'}
+  else add('Hola, soy tu asistente. ¿En qué te ayudo?','b')}
+ catch(e){$('rest').textContent='—'}})();
+</script></body></html>
