@@ -48,11 +48,10 @@ small{color:var(--mt)}
 
 <script>
 const API='https://core.localclick.com.mx/webhook/asistente';
-const TOKEN_KEYS=['nexus_token','token']; // cambia si el panel guarda el token con otro nombre
+const TOKEN_KEYS = ['nlc_token', 'nexus_token', 'token'];// cambia si el panel guarda el token con otro nombre
 const $=i=>document.getElementById(i);
 const F=['negocio','giro','nombre_agente','instrucciones','documento'];
-const tok=()=>{for(const k of TOKEN_KEYS){const v=localStorage.getItem(k)||sessionStorage.getItem(k);if(v)return v}return''};
-if(!tok())location.href='/';
+pp
 
 async function call(accion,extra){
   const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok(),accion,...extra})});
