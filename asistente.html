@@ -61,9 +61,10 @@ async function call(accion,extra){
 const setRest=n=>$('rest').textContent=n;
 const kb=()=>$('kb').textContent=(new Blob([$('documento').value]).size/1024).toFixed(1)+' KB de 30 KB';
 function add(t,c){const d=document.createElement('div');d.className='m '+c;d.textContent=t;$('msgs').append(d);$('msgs').scrollTop=1e9;return d}
-function tab(n){$('v1').classList.toggle('hide',n!=1);$('v2').classList.toggle('hide',n!=2);$('t1').classList.toggle('on',n==1);$('t2').classList.toggle('on',n==2)}
-$('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
-$('documento').oninput=kb;
+function tab(n){
+  $('v1').classList.toggle('hide',n!=1);$('v2').classList.toggle('hide',n!=2);$('t1').classList.toggle('on',n==1);$('t2').classList.toggle('on',n==2)}
+  $('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
+  $('documento').oninput=kb;
 
 $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;
   if(f.size>100000){$('st').textContent='El archivo es muy grande. Máximo 30 KB de texto.';return}
