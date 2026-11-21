@@ -58,19 +58,19 @@ async function call(accion,extra){
   const d=await r.json();
   if(d.error==='sesion'){location.href='/';throw 0}
   return d}
-const setRest=n=>$('rest').textContent=n;
-const kb=()=>$('kb').textContent=(new Blob([$('documento').value]).size/1024).toFixed(1)+' KB de 30 KB';
-function add(t,c){const d=document.createElement('div');d.className='m '+c;d.textContent=t;$('msgs').append(d);$('msgs').scrollTop=1e9;return d}
-function tab(n){
+  const setRest=n=>$('rest').textContent=n;
+  const kb=()=>$('kb').textContent=(new Blob([$('documento').value]).size/1024).toFixed(1)+' KB de 30 KB';
+  function add(t,c){const d=document.createElement('div');d.className='m '+c;d.textContent=t;$('msgs').append(d);$('msgs').scrollTop=1e9;return d}
+  function tab(n){
   $('v1').classList.toggle('hide',n!=1);$('v2').classList.toggle('hide',n!=2);$('t1').classList.toggle('on',n==1);$('t2').classList.toggle('on',n==2)}
   $('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
   $('documento').oninput=kb;
 
-$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;
   if(f.size>100000){$('st').textContent='El archivo es muy grande. Máximo 30 KB de texto.';return}
   const r=new FileReader();r.onload=()=>{$('documento').value=String(r.result).slice(0,30000);kb()};r.readAsText(f)};
 
-$('save').onclick=async()=>{const c={};F.forEach(k=>c[k]=$(k).value);$('st').textContent='Guardando…';
+  $('save').onclick=async()=>{const c={};F.forEach(k=>c[k]=$(k).value);$('st').textContent='Guardando…';
   try{const d=await call('config_save',{config:c});
     $('st').textContent=d.negocio!==undefined?'Guardado ✓':'No se pudo guardar. Intenta de nuevo.'}
   catch(e){$('st').textContent='No se pudo guardar. Revisa tu conexión.'}};
