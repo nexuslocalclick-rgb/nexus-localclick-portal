@@ -48,46 +48,72 @@ small{color:var(--mt)}
 
 <script>
 const API='https://core.localclick.com.mx/webhook/asistente';
-const TOKEN_KEYS = ['nlc_token', 'nexus_token', 'token'];// cambia si el panel guarda el token con otro nombre
+const TOKEN_KEYS=['nlc_token','nexus_token','token'];
 const $=i=>document.getElementById(i);
 const F=['negocio','giro','nombre_agente','instrucciones','documento'];
-pp
+const tok=()=>{for(const k of TOKEN_KEYS){const v=localStorage.getItem(k)||sessionStorage.getItem(k);if(v)return v}return''};
+if(!tok())location.href='/';
 
 async function call(accion,extra){
   const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok(),accion,...extra})});
   const d=await r.json();
   if(d.error==='sesion'){location.href='/';throw 0}
-  return d}
-  const setRest=n=>$('rest').textContent=n;
-  const kb=()=>$('kb').textContent=(new Blob([$('documento').value]).size/1024).toFixed(1)+' KB de 30 KB';
-  function add(t,c){const d=document.createElement('div');d.className='m '+c;d.textContent=t;$('msgs').append(d);$('msgs').scrollTop=1e9;return d}
-  function tab(n){
-  $('v1').classList.toggle('hide',n!=1);$('v2').classList.toggle('hide',n!=2);$('t1').classList.toggle('on',n==1);$('t2').classList.toggle('on',n==2)}
-  $('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
-  $('documento').oninput=kb;
+  return d;
+}
 
-  $('file').onchange=e=>{const f=e.target.files[0];if(!f)return;
+const setRest=n=>$('rest').textContent=n;
+const kb=()=>$('kb').textContent=(new Blob([$('documento').value]).size/1024).toFixed(1)+' KB de 30 KB';
+function add(t,c){const d=document.createElement('div');d.className='m '+c;d.textContent=t;$('msgs').append(d);$('msgs').scrollTop=1e9;return d}
+function tab(n){$('v1').classList.toggle('hide',n!=1);$('v2').classList.toggle('hide',n!=2);$('t1').classList.toggle('on',n==1);$('t2').classList.toggle('on',n==2)}
+$('t1').onclick=()=>tab(1);
+$('t2').onclick=()=>tab(2);
+$('documento').oninput=kb;
+
+$('file').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
   if(f.size>100000){$('st').textContent='El archivo es muy grande. Máximo 30 KB de texto.';return}
-  const r=new FileReader();r.onload=()=>{$('documento').value=String(r.result).slice(0,30000);kb()};r.readAsText(f)};
+  const r=new FileReader();
+  r.onload=()=>{$('documento').value=String(r.result).slice(0,30000);kb()};
+  r.readAsText(f);
+};
 
-  $('save').onclick=async()=>{const c={};F.forEach(k=>c[k]=$(k).value);$('st').textContent='Guardando…';
-  try{const d=await call('config_save',{config:c});
-    $('st').textContent=d.negocio!==undefined?'Guardado ✓':'No se pudo guardar. Intenta de nuevo.'}
-  catch(e){$('st').textContent='No se pudo guardar. Revisa tu conexión.'}};
+$('save').onclick=async()=>{
+  const c={};F.forEach(k=>c[k]=$(k).value);$('st').textContent='Guardando…';
+  try{
+    const d=await call('config_save',{config:c});
+    $('st').textContent=d.negocio!==undefined?'Guardado ✓':'No se pudo guardar. Intenta de nuevo.';
+  }catch(e){
+    if(e!==0)$('st').textContent='No se pudo guardar. Revisa tu conexión.';
+  }
+};
 
-async function send(){const q=$('q').value.trim();if(!q)return;
+async function send(){
+  const q=$('q').value.trim();if(!q)return;
   $('q').value='';add(q,'u');const w=add('…','b');$('send').disabled=true;
-  try{const d=await call('chat',{mensaje:q});
+  try{
+    const d=await call('chat',{mensaje:q});
     if(d.respuesta){w.textContent=d.respuesta;setRest(d.restantes)}
-    else w.textContent=d.error==='cuota'?'Ya usaste tus consultas de hoy. Se renuevan mañana.':'No pude responder ahora. Intenta en unos minutos; no se descontó tu consulta.'}
-  catch(e){w.textContent='Sin conexión. Intenta de nuevo.'}
-  $('send').disabled=false}
+    else w.textContent=d.error==='cuota'?'Ya usaste tus consultas de hoy. Se renuevan mañana.':'No pude responder ahora. Intenta en unos minutos; no se descontó tu consulta.';
+  }catch(e){
+    if(e!==0)w.textContent='Sin conexión. Intenta de nuevo.';
+  }
+  $('send').disabled=false;
+}
+
 $('send').onclick=send;
 $('q').onkeydown=e=>{if(e.key==='Enter')send()};
 
-(async()=>{try{const d=await call('config_get');
-  setRest(Math.max(0,d.limite-d.usadas));F.forEach(k=>$(k).value=d[k]||'');kb();
-  if(!d.negocio){tab(2);$('st').textContent='Cuéntanos de tu negocio y guarda para empezar.'}
-  else add('Hola, soy tu asistente. ¿En qué te ayudo?','b')}
- catch(e){$('rest').textContent='—'}})();
-</script></body></html>
+(async()=>{
+  try{
+    const d=await call('config_get');
+    setRest(Math.max(0,(d.limite||0)-(d.usadas||0)));
+    F.forEach(k=>$(k).value=d[k]||'');kb();
+    if(!d.negocio){tab(2);$('st').textContent='Cuéntanos de tu negocio y guarda para empezar.'}
+    else add('Hola, soy tu asistente. ¿En qué te ayudo?','b');
+  }catch(e){
+    if(e!==0)$('rest').textContent='—';
+  }
+})();
+</script>
+</body>  
+  </html>
