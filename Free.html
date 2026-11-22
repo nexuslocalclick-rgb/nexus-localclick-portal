@@ -47,7 +47,6 @@
     .brand h1 {
       margin: 0;
       font-size: 1.15rem;
-      letter-spacing: 0.2px;
     }
 
     .badge {
@@ -74,7 +73,6 @@
       cursor: pointer;
       font-weight: 600;
       font-size: 0.9rem;
-      transition: 0.15s ease;
     }
 
     .tab-btn:hover {
@@ -257,10 +255,10 @@
       <h1>Suite Local</h1>
       <span class="badge">100% en tu navegador · Sin subir archivos</span>
     </div>
-    <nav aria-label="Herramientas">
-      <button class="tab-btn active" data-tab="pdf">1. PDF y Evidencias</button>
-      <button class="tab-btn" data-tab="card">2. Ficha / Tarjeta + QR</button>
-      <button class="tab-btn" data-tab="sfx">3. Audio SFX 8-Bit</button>
+    <nav id="tabs-nav" aria-label="Herramientas">
+      <button type="button" class="tab-btn active" data-tab="pdf">1. PDF y Evidencias</button>
+      <button type="button" class="tab-btn" data-tab="card">2. Ficha / Tarjeta + QR</button>
+      <button type="button" class="tab-btn" data-tab="sfx">3. Audio SFX 8-Bit</button>
     </nav>
   </header>
 
@@ -281,8 +279,8 @@
           <input id="pdf-watermark" type="text" placeholder="Ej. ANEXO · COPIA DE CONTROL" />
 
           <div class="row">
-            <button id="pdf-merge-btn" class="btn btn-green" disabled>Generar PDF combinado</button>
-            <button id="pdf-clear-btn" class="btn btn-secondary" type="button">Limpiar lista</button>
+            <button type="button" id="pdf-merge-btn" class="btn btn-green" disabled>Generar PDF combinado</button>
+            <button type="button" id="pdf-clear-btn" class="btn btn-secondary">Limpiar lista</button>
           </div>
           <div id="pdf-status" class="status"></div>
         </div>
@@ -326,7 +324,7 @@
             </div>
           </div>
 
-          <button id="card-download-btn" class="btn btn-green">Descargar PNG</button>
+          <button type="button" id="card-download-btn" class="btn btn-green">Descargar PNG</button>
           <div id="card-status" class="status"></div>
         </div>
 
@@ -360,17 +358,17 @@
           </select>
 
           <label for="sfx-start-freq">Frecuencia inicial (Hz)</label>
-          <input id="sfx-start-freq" type="number" min="60" max="3000" value="520" />
+          <input id="sfx-start-freq" type="number" min="60" max="3000" value="980" />
 
           <label for="sfx-end-freq">Frecuencia final (Hz)</label>
-          <input id="sfx-end-freq" type="number" min="40" max="3000" value="1040" />
+          <input id="sfx-end-freq" type="number" min="40" max="3000" value="1480" />
 
           <label for="sfx-duration">Duración (segundos)</label>
-          <input id="sfx-duration" type="number" step="0.05" min="0.05" max="2" value="0.25" />
+          <input id="sfx-duration" type="number" step="0.05" min="0.05" max="2" value="0.16" />
 
           <div class="row">
-            <button id="sfx-play-btn" class="btn">Reproducir</button>
-            <button id="sfx-wav-btn" class="btn btn-green">Descargar .WAV</button>
+            <button type="button" id="sfx-play-btn" class="btn">Reproducir</button>
+            <button type="button" id="sfx-wav-btn" class="btn btn-green">Descargar .WAV</button>
           </div>
           <div id="sfx-status" class="status"></div>
         </div>
@@ -385,247 +383,418 @@
   </main>
 
   <script>
-    // --- NAVEGACIÓN ENTRE PESTAÑAS ---
-    const tabs = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tool-panel');
+    (function () {
+      // --- NAVEGACIÓN ENTRE PESTAÑAS (delegación en nav para que nunca falle) ---
+      const tabsNav = document.getElementById('tabs-nav');
+      const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+      const panels = Array.from(document.querySelectorAll('.tool-panel'));
 
-    tabs.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const target = btn.dataset.tab;
-        tabs.forEach((b) => b.classList.toggle('active', b === btn));
-        panels.forEach((p) => p.classList.toggle('active', p.id === `tab-${target}`));
-        if (target === 'card') renderCard();
-      });
-    });
-
-    // --- CARGADOR BAJO DEMANDA DE SCRIPTS ---
-    const loadedScripts = new Map();
-    function loadScriptOnce(src) {
-      if (loadedScripts.has(src)) return loadedScripts.get(src);
-      const promise = new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = src;
-        s.async = true;
-        s.onload = resolve;
-        s.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
-        document.head.appendChild(s);
-      });
-      loadedScripts.set(src, promise);
-      return promise;
-    }
-
-    function triggerDownload(blob, filename) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1500);
-    }
-
-    // --- MÓDULO 1: PDF + EVIDENCIAS ---
-    const pdfInput = document.getElementById('pdf-files');
-    const pdfQueueEl = document.getElementById('pdf-queue');
-    const pdfMergeBtn = document.getElementById('pdf-merge-btn');
-    const pdfClearBtn = document.getElementById('pdf-clear-btn');
-    const pdfWatermark = document.getElementById('pdf-watermark');
-    const pdfStatus = document.getElementById('pdf-status');
-
-    let pdfItems = [];
-
-    function renderPdfQueue() {
-      pdfQueueEl.innerHTML = '';
-      pdfItems.forEach((file, idx) => {
-        const li = document.createElement('li');
-        li.className = 'file-item';
-        li.innerHTML = `
-          <span>${idx + 1}. ${file.name}</span>
-          <span class="row" style="gap:0.25rem">
-            <button class="mini-btn" data-move="-1" data-idx="${idx}" ${idx === 0 ? 'disabled' : ''}>↑</button>
-            <button class="mini-btn" data-move="1" data-idx="${idx}" ${idx === pdfItems.length - 1 ? 'disabled' : ''}>↓</button>
-            <button class="mini-btn del" data-del="${idx}">✕</button>
-          </span>
-        `;
-        pdfQueueEl.appendChild(li);
-      });
-      pdfMergeBtn.disabled = pdfItems.length === 0;
-    }
-
-    pdfInput.addEventListener('change', (e) => {
-      if (e.target.files?.length) {
-        pdfItems.push(...Array.from(e.target.files));
-        renderPdfQueue();
-        pdfStatus.textContent = '';
-        pdfInput.value = '';
-      }
-    });
-
-    pdfQueueEl.addEventListener('click', (e) => {
-      const idx = Number(e.target.dataset.idx);
-      if (e.target.dataset.move) {
-        const delta = Number(e.target.dataset.move);
-        const swap = idx + delta;
-        [pdfItems[idx], pdfItems[swap]] = [pdfItems[swap], pdfItems[idx]];
-        renderPdfQueue();
-      } else if (e.target.dataset.del !== undefined) {
-        const delIdx = Number(e.target.dataset.del);
-        pdfItems.splice(delIdx, 1);
-        renderPdfQueue();
-      }
-    });
-
-    pdfClearBtn.addEventListener('click', () => {
-      pdfItems = [];
-      renderPdfQueue();
-      pdfStatus.textContent = '';
-    });
-
-    pdfMergeBtn.addEventListener('click', async () => {
-      pdfMergeBtn.disabled = true;
-      pdfStatus.textContent = 'Cargando motor PDF...';
-      try {
-        await loadScriptOnce('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js');
-        const { PDFDocument, rgb, StandardFonts } = window.PDFLib;
-        const outPdf = await PDFDocument.create();
-        const font = await outPdf.embedFont(StandardFonts.HelveticaBold);
-
-        for (const file of pdfItems) {
-          pdfStatus.textContent = `Procesando ${file.name}...`;
-          const bytes = await file.arrayBuffer();
-
-          if (file.type === 'application/pdf') {
-            const srcPdf = await PDFDocument.load(bytes);
-            const copied = await outPdf.copyPages(srcPdf, srcPdf.getPageIndices());
-            copied.forEach((p) => outPdf.addPage(p));
-          } else if (file.type === 'image/png' || file.type === 'image/jpeg') {
-            const img = file.type === 'image/png'
-              ? await outPdf.embedPng(bytes)
-              : await outPdf.embedJpg(bytes);
-            const page = outPdf.addPage([612, 792]); // Carta aprox en puntos
-            const margin = 36;
-            const maxW = page.getWidth() - margin * 2;
-            const maxH = page.getHeight() - margin * 2;
-            const scale = Math.min(maxW / img.width, maxH / img.height, 1);
-            const w = img.width * scale;
-            const h = img.height * scale;
-            page.drawImage(img, {
-              x: (page.getWidth() - w) / 2,
-              y: (page.getHeight() - h) / 2,
-              width: w,
-              height: h
-            });
-          }
+      function switchTab(target) {
+        tabBtns.forEach((b) => b.classList.toggle('active', b.dataset.tab === target));
+        panels.forEach((p) => p.classList.toggle('active', p.id === 'tab-' + target));
+        if (target === 'card') {
+          renderCard();
         }
+      }
 
-        const note = pdfWatermark.value.trim();
-        if (note) {
-          outPdf.getPages().forEach((page, i) => {
-            page.drawText(`${note}  |  Pág. ${i + 1}`, {
-              x: 36,
-              y: 18,
-              size: 9,
-              font,
-              color: rgb(0.4, 0.45, 0.55)
-            });
+      tabsNav.addEventListener('click', (e) => {
+        const btn = e.target.closest('.tab-btn');
+        if (!btn) return;
+        switchTab(btn.dataset.tab);
+      });
+
+      // --- CARGADOR BAJO DEMANDA DE SCRIPTS ---
+      const loadedScripts = new Map();
+      function loadScriptOnce(src) {
+        if (loadedScripts.has(src)) return loadedScripts.get(src);
+        const promise = new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.async = true;
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error('No se pudo cargar ' + src));
+          document.head.appendChild(s);
+        });
+        loadedScripts.set(src, promise);
+        return promise;
+      }
+
+      function triggerDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      // --- MÓDULO 1: PDF + EVIDENCIAS ---
+      const pdfInput = document.getElementById('pdf-files');
+      const pdfQueueEl = document.getElementById('pdf-queue');
+      const pdfMergeBtn = document.getElementById('pdf-merge-btn');
+      const pdfClearBtn = document.getElementById('pdf-clear-btn');
+      const pdfWatermark = document.getElementById('pdf-watermark');
+      const pdfStatus = document.getElementById('pdf-status');
+
+      let pdfItems = [];
+
+      function renderPdfQueue() {
+        pdfQueueEl.innerHTML = '';
+        pdfItems.forEach((file, idx) => {
+          const li = document.createElement('li');
+          li.className = 'file-item';
+
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = (idx + 1) + '. ' + file.name;
+
+          const controls = document.createElement('span');
+          controls.className = 'row';
+          controls.style.gap = '0.25rem';
+
+          const upBtn = document.createElement('button');
+          upBtn.type = 'button';
+          upBtn.className = 'mini-btn';
+          upBtn.textContent = '↑';
+          upBtn.disabled = idx === 0;
+          upBtn.addEventListener('click', () => {
+            [pdfItems[idx], pdfItems[idx - 1]] = [pdfItems[idx - 1], pdfItems[idx]];
+            renderPdfQueue();
           });
-        }
 
-        const mergedBytes = await outPdf.save();
-        triggerDownload(new Blob([mergedBytes], { type: 'application/pdf' }), 'documento-combinado.pdf');
-        pdfStatus.textContent = 'Listo: PDF descargado.';
-      } catch (err) {
-        pdfStatus.textContent = `Error: ${err.message}`;
-      } finally {
+          const downBtn = document.createElement('button');
+          downBtn.type = 'button';
+          downBtn.className = 'mini-btn';
+          downBtn.textContent = '↓';
+          downBtn.disabled = idx === pdfItems.length - 1;
+          downBtn.addEventListener('click', () => {
+            [pdfItems[idx], pdfItems[idx + 1]] = [pdfItems[idx + 1], pdfItems[idx]];
+            renderPdfQueue();
+          });
+
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'mini-btn del';
+          delBtn.textContent = '✕';
+          delBtn.addEventListener('click', () => {
+            pdfItems.splice(idx, 1);
+            renderPdfQueue();
+          });
+
+          controls.append(upBtn, downBtn, delBtn);
+          li.append(nameSpan, controls);
+          pdfQueueEl.appendChild(li);
+        });
         pdfMergeBtn.disabled = pdfItems.length === 0;
       }
-    });
 
-    // --- MÓDULO 2: FICHA / TARJETA + QR ---
-    const cardCanvas = document.getElementById('card-canvas');
-    const cardCtx = cardCanvas.getContext('2d');
-    const cardTitle = document.getElementById('card-title');
-    const cardSubtitle = document.getElementById('card-subtitle');
-    const cardDetails = document.getElementById('card-details');
-    const cardQr = document.getElementById('card-qr');
-    const cardColor = document.getElementById('card-color');
-    const cardAccent = document.getElementById('card-accent');
-    const cardDownloadBtn = document.getElementById('card-download-btn');
-    const cardStatus = document.getElementById('card-status');
-
-    let qrDrawSeq = 0;
-
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-      const words = text.split(/\s+/);
-      let line = '';
-      let curY = y;
-      for (const word of words) {
-        const test = line ? `${line} ${word}` : word;
-        if (ctx.measureText(test).width > maxWidth && line) {
-          ctx.fillText(line, x, curY);
-          line = word;
-          curY += lineHeight;
-        } else {
-          line = test;
+      pdfInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          pdfItems.push(...Array.from(e.target.files));
+          renderPdfQueue();
+          pdfStatus.textContent = '';
+          pdfInput.value = '';
         }
+      });
+
+      pdfClearBtn.addEventListener('click', () => {
+        pdfItems = [];
+        renderPdfQueue();
+        pdfStatus.textContent = '';
+      });
+
+      pdfMergeBtn.addEventListener('click', async () => {
+        pdfMergeBtn.disabled = true;
+        pdfStatus.textContent = 'Cargando motor PDF...';
+        try {
+          await loadScriptOnce('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js');
+          const { PDFDocument, rgb, StandardFonts } = window.PDFLib;
+          const outPdf = await PDFDocument.create();
+          const font = await outPdf.embedFont(StandardFonts.HelveticaBold);
+
+          for (const file of pdfItems) {
+            pdfStatus.textContent = 'Procesando ' + file.name + '...';
+            const bytes = await file.arrayBuffer();
+
+            if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+              const srcPdf = await PDFDocument.load(bytes);
+              const copied = await outPdf.copyPages(srcPdf, srcPdf.getPageIndices());
+              copied.forEach((p) => outPdf.addPage(p));
+            } else if (file.type === 'image/png' || file.type === 'image/jpeg') {
+              const img = file.type === 'image/png'
+                ? await outPdf.embedPng(bytes)
+                : await outPdf.embedJpg(bytes);
+              const page = outPdf.addPage([612, 792]);
+              const margin = 36;
+              const maxW = page.getWidth() - margin * 2;
+              const maxH = page.getHeight() - margin * 2;
+              const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+              const w = img.width * scale;
+              const h = img.height * scale;
+              page.drawImage(img, {
+                x: (page.getWidth() - w) / 2,
+                y: (page.getHeight() - h) / 2,
+                width: w,
+                height: h
+              });
+            }
+          }
+
+          const note = pdfWatermark.value.trim();
+          if (note) {
+            outPdf.getPages().forEach((page, i) => {
+              page.drawText(note + '  |  Pág. ' + (i + 1), {
+                x: 36,
+                y: 18,
+                size: 9,
+                font,
+                color: rgb(0.4, 0.45, 0.55)
+              });
+            });
+          }
+
+          const mergedBytes = await outPdf.save();
+          triggerDownload(new Blob([mergedBytes], { type: 'application/pdf' }), 'documento-combinado.pdf');
+          pdfStatus.textContent = 'Listo: PDF descargado.';
+        } catch (err) {
+          pdfStatus.textContent = 'Error: ' + err.message;
+        } finally {
+          pdfMergeBtn.disabled = pdfItems.length === 0;
+        }
+      });
+
+      // --- MÓDULO 2: FICHA / TARJETA + QR ---
+      const cardCanvas = document.getElementById('card-canvas');
+      const cardCtx = cardCanvas.getContext('2d');
+      const cardTitle = document.getElementById('card-title');
+      const cardSubtitle = document.getElementById('card-subtitle');
+      const cardDetails = document.getElementById('card-details');
+      const cardQr = document.getElementById('card-qr');
+      const cardColor = document.getElementById('card-color');
+      const cardAccent = document.getElementById('card-accent');
+      const cardDownloadBtn = document.getElementById('card-download-btn');
+      const cardStatus = document.getElementById('card-status');
+
+      let qrDrawSeq = 0;
+
+      function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+        const words = String(text || '').split(/\s+/).filter(Boolean);
+        let line = '';
+        let curY = y;
+        for (const word of words) {
+          const test = line ? line + ' ' + word : word;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            ctx.fillText(line, x, curY);
+            line = word;
+            curY += lineHeight;
+          } else {
+            line = test;
+          }
+        }
+        if (line) {
+          ctx.fillText(line, x, curY);
+        } else {
+          curY -= lineHeight;
+        }
+        return curY;
       }
-      if (line) ctx.fillText(line, x, curY);
-      return curY;
-    }
 
-    async function renderCard() {
-      const seq = ++qrDrawSeq;
-      const w = cardCanvas.width;
-      const h = cardCanvas.height;
-
-      cardCtx.clearRect(0, 0, w, h);
-      cardCtx.fillStyle = '#ffffff';
-      cardCtx.fillRect(0, 0, w, h);
-
-      // Franja lateral
-      cardCtx.fillStyle = cardColor.value;
-      cardCtx.fillRect(0, 0, 26, h);
-
-      cardCtx.fillStyle = cardAccent.value;
-      cardCtx.fillRect(26, 0, 8, h);
-
-      // Textos
-      cardCtx.fillStyle = cardColor.value;
-      cardCtx.font = 'bold 34px system-ui, sans-serif';
-      const afterTitle = wrapText(cardCtx, cardTitle.value || 'Título', 64, 82, 460, 42);
-
-      cardCtx.fillStyle = cardAccent.value;
-      cardCtx.font = '600 20px system-ui, sans-serif';
-      const afterSub = wrapText(cardCtx, cardSubtitle.value || '', 64, afterTitle + 34, 460, 28);
-
-      cardCtx.fillStyle = '#334155';
-      cardCtx.font = '400 18px system-ui, sans-serif';
-      wrapText(cardCtx, cardDetails.value || '', 64, afterSub + 42, 460, 26);
-
-      // QR
-      const qrText = (cardQr.value || 'https://ejemplo.com').trim();
-      try {
-        await loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js');
-        if (seq !== qrDrawSeq) return;
-        const qrTmp = document.createElement('canvas');
-        await window.QRCode.toCanvas(qrTmp, qrText, { width: 190, margin: 1 });
-        if (seq !== qrDrawSeq) return;
-        cardCtx.drawImage(qrTmp, w - 235, h / 2 - 95, 190, 190);
-      } catch (_) {
-        if (seq !== qrDrawSeq) return;
+      function drawFallbackQrBox(x, y, size, label) {
+        cardCtx.save();
         cardCtx.strokeStyle = '#94a3b8';
-        cardCtx.strokeRect(w - 235, h / 2 - 95, 190, 190);
+        cardCtx.lineWidth = 2;
+        cardCtx.strokeRect(x, y, size, size);
         cardCtx.fillStyle = '#64748b';
         cardCtx.font = '14px system-ui, sans-serif';
-        cardCtx.fillText('QR sin conexión', w - 185, h / 2);
+        cardCtx.textAlign = 'center';
+        cardCtx.fillText(label, x + size / 2, y + size / 2 + 5);
+        cardCtx.restore();
       }
-    }
 
-    [cardTitle, cardSubtitle, cardDetails, cardQr, cardColor, cardAccent].forEach((el) => {
-      el.addEventListener('input', renderCard);
-    });
+      async function renderCard() {
+        const seq = ++qrDrawSeq;
+        const w = cardCanvas.width;
+        const h = cardCanvas.height;
 
-    cardDownloadBtn.addEventListener('click', () => {
-      cardCanvas.toBlob((blob) => {
-        if (blob) {
-          triggerDownload(blob, 'ficha-tarjeta.png');
-          cardStatus.textContent = 'PNG
+        cardCtx.clearRect(0, 0, w, h);
+        cardCtx.fillStyle = '#ffffff';
+        cardCtx.fillRect(0, 0, w, h);
+
+        cardCtx.fillStyle = cardColor.value;
+        cardCtx.fillRect(0, 0, 26, h);
+
+        cardCtx.fillStyle = cardAccent.value;
+        cardCtx.fillRect(26, 0, 8, h);
+
+        cardCtx.fillStyle = cardColor.value;
+        cardCtx.font = 'bold 34px system-ui, sans-serif';
+        const afterTitle = wrapText(cardCtx, cardTitle.value || 'Título', 64, 82, 460, 42);
+
+        cardCtx.fillStyle = cardAccent.value;
+        cardCtx.font = '600 20px system-ui, sans-serif';
+        const afterSub = wrapText(cardCtx, cardSubtitle.value || '', 64, afterTitle + 34, 460, 28);
+
+        cardCtx.fillStyle = '#334155';
+        cardCtx.font = '400 18px system-ui, sans-serif';
+        wrapText(cardCtx, cardDetails.value || '', 64, afterSub + 42, 460, 26);
+
+        const qrSize = 190;
+        const qrX = w - 235;
+        const qrY = h / 2 - qrSize / 2;
+        const qrText = (cardQr.value || 'https://ejemplo.com').trim();
+
+        drawFallbackQrBox(qrX, qrY, qrSize, 'Generando QR...');
+
+        try {
+          await loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js');
+          if (seq !== qrDrawSeq) return;
+          if (!window.QRCode || typeof window.QRCode.toCanvas !== 'function') {
+            drawFallbackQrBox(qrX, qrY, qrSize, 'QR no disponible');
+            return;
+          }
+          const qrTmp = document.createElement('canvas');
+          await window.QRCode.toCanvas(qrTmp, qrText, { width: qrSize, margin: 1 });
+          if (seq !== qrDrawSeq) return;
+          cardCtx.clearRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
+          cardCtx.fillStyle = '#ffffff';
+          cardCtx.fillRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
+          cardCtx.drawImage(qrTmp, qrX, qrY, qrSize, qrSize);
+        } catch (_) {
+          if (seq !== qrDrawSeq) return;
+          cardCtx.clearRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
+          cardCtx.fillStyle = '#ffffff';
+          cardCtx.fillRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
+          drawFallbackQrBox(qrX, qrY, qrSize, 'QR sin red');
+        }
+      }
+
+      [cardTitle, cardSubtitle, cardDetails, cardQr, cardColor, cardAccent].forEach((el) => {
+        el.addEventListener('input', renderCard);
+      });
+
+      cardDownloadBtn.addEventListener('click', () => {
+        cardCanvas.toBlob((blob) => {
+          if (blob) {
+            triggerDownload(blob, 'ficha-tarjeta.png');
+            cardStatus.textContent = 'PNG descargado.';
+          }
+        }, 'image/png');
+      });
+
+      renderCard();
+
+      // --- MÓDULO 3: AUDIO SFX 8-BIT ---
+      const sfxPreset = document.getElementById('sfx-preset');
+      const sfxWave = document.getElementById('sfx-wave');
+      const sfxStartFreq = document.getElementById('sfx-start-freq');
+      const sfxEndFreq = document.getElementById('sfx-end-freq');
+      const sfxDuration = document.getElementById('sfx-duration');
+      const sfxPlayBtn = document.getElementById('sfx-play-btn');
+      const sfxWavBtn = document.getElementById('sfx-wav-btn');
+      const sfxStatus = document.getElementById('sfx-status');
+
+      const presets = {
+        coin: { wave: 'square', start: 980, end: 1480, dur: 0.16 },
+        laser: { wave: 'sawtooth', start: 1200, end: 140, dur: 0.22 },
+        jump: { wave: 'square', start: 220, end: 760, dur: 0.25 },
+        explosion: { wave: 'triangle', start: 180, end: 45, dur: 0.45 }
+      };
+
+      sfxPreset.addEventListener('change', () => {
+        const p = presets[sfxPreset.value];
+        if (!p) return;
+        sfxWave.value = p.wave;
+        sfxStartFreq.value = p.start;
+        sfxEndFreq.value = p.end;
+        sfxDuration.value = p.dur;
+      });
+
+      async function renderSfxBuffer() {
+        const dur = Math.max(0.05, Math.min(2, Number(sfxDuration.value) || 0.25));
+        const f0 = Math.max(40, Math.min(3000, Number(sfxStartFreq.value) || 440));
+        const f1 = Math.max(40, Math.min(3000, Number(sfxEndFreq.value) || 880));
+        const sampleRate = 44100;
+        const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        const ctx = new OfflineCtx(1, Math.ceil(sampleRate * dur), sampleRate);
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = sfxWave.value;
+        osc.frequency.setValueAtTime(f0, 0);
+        osc.frequency.exponentialRampToValueAtTime(f1, dur);
+
+        gain.gain.setValueAtTime(0.25, 0);
+        gain.gain.exponentialRampToValueAtTime(0.001, dur);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(0);
+        osc.stop(dur);
+        return ctx.startRendering();
+      }
+
+      function audioBufferToWav(buffer) {
+        const samples = buffer.getChannelData(0);
+        const len = samples.length * 2;
+        const out = new ArrayBuffer(44 + len);
+        const view = new DataView(out);
+
+        const writeStr = (off, str) => {
+          for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i));
+        };
+
+        writeStr(0, 'RIFF');
+        view.setUint32(4, 36 + len, true);
+        writeStr(8, 'WAVE');
+        writeStr(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, buffer.sampleRate, true);
+        view.setUint32(28, buffer.sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeStr(36, 'data');
+        view.setUint32(40, len, true);
+
+        let offset = 44;
+        for (let i = 0; i < samples.length; i++, offset += 2) {
+          const s = Math.max(-1, Math.min(1, samples[i]));
+          view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+        }
+        return new Blob([out], { type: 'audio/wav' });
+      }
+
+      sfxPlayBtn.addEventListener('click', async () => {
+        try {
+          const rendered = await renderSfxBuffer();
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          const playCtx = new AudioCtx();
+          if (playCtx.state === 'suspended') await playCtx.resume();
+          const src = playCtx.createBufferSource();
+          src.buffer = rendered;
+          src.connect(playCtx.destination);
+          src.start();
+          src.onended = () => playCtx.close();
+          sfxStatus.textContent = 'Reproducido.';
+        } catch (err) {
+          sfxStatus.textContent = 'Error de audio: ' + err.message;
+        }
+      });
+
+      sfxWavBtn.addEventListener('click', async () => {
+        try {
+          const rendered = await renderSfxBuffer();
+          const wavBlob = audioBufferToWav(rendered);
+          triggerDownload(wavBlob, 'sfx-' + (sfxPreset.value || 'retro') + '.wav');
+          sfxStatus.textContent = 'Archivo .WAV descargado.';
+        } catch (err) {
+          sfxStatus.textContent = 'Error al exportar: ' + err.message;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
