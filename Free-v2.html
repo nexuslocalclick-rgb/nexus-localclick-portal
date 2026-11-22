@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suite Local Zero-Upload</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #0b1220;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --border: #334155;
+      --danger: #f87171;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      background: var(--panel-2);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tab-btn {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.95rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      touch-action: manipulation;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #06202a;
+      border-color: var(--accent);
+    }
+
+    main {
+      max-width: 1020px;
+      margin: 1.5rem auto;
+      padding: 0 1rem 3rem;
+    }
+
+    .tool-panel {
+      display: none;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .tool-panel.active {
+      display: block;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .box {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      margin-top: 0.75rem;
+    }
+
+    label:first-child { margin-top: 0; }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="color"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    input[type="color"] {
+      height: 40px;
+      padding: 0.2rem;
+      cursor: pointer;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .btn {
+      margin-top: 1rem;
+      background: var(--accent);
+      color: #06202a;
+      border: none;
+      padding: 0.65rem 1.1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.92rem;
+      touch-action: manipulation;
+    }
+
+    .btn:hover { filter: brightness(1.08); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+    }
+
+    .btn-green {
+      background: var(--accent-2);
+      color: #052e16;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .file-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.75rem 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .mini-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.2rem 0.45rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .mini-btn.del {
+      border-color: rgba(248, 113, 113, 0.4);
+      color: var(--danger);
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: block;
+    }
+
+    .status {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+
+    .hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Suite Local</h1>
+      <span class="badge">100% en tu navegador · Sin subir archivos</span>
+    </div>
+    <nav id="tabs-nav" aria-label="Herramientas">
+      <button type="button" id="btn-tab-pdf" class="tab-btn active" data-tab="pdf" onclick="window.abrirPestana('pdf')">1. PDF y Evidencias</button>
+      <button type="button" id="btn-tab-card" class="tab-btn" data-tab="card" onclick="window.abrirPestana('card')">2. Ficha / Tarjeta + QR</button>
+      <button type="button" id="btn-tab-sfx" class="tab-btn" data-tab="sfx" onclick="window.abrirPestana('sfx')">3. Audio SFX 8-Bit</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- MÓDULO 1: PDF Y EVIDENCIAS -->
+    <section id="tab-pdf" class="tool-panel active">
+      <h2>Armador y Unificador de PDF + Evidencias</h2>
+      <p class="hint">Combina archivos PDF e imágenes (JPG/PNG), ordénalos y agrega un pie de página o marca discreta sin enviar nada a un servidor.</p>
+
+      <div class="grid-2">
+        <div class="box">
+          <label for="pdf-files">Selecciona PDFs o fotos (JPG, PNG)</label>
+          <input id="pdf-files" type="file" accept="application/pdf,image/png,image/jpeg" multiple />
+
+          <ul id="pdf-queue" class="file-list"></ul>
+
+          <label for="pdf-watermark">Texto al pie / marca (opcional)</label>
+          <input id="pdf-watermark" type="text" placeholder="Ej. ANEXO · COPIA DE CONTROL" />
+
+          <div class="row">
+            <button type="button" id="pdf-merge-btn" class="btn btn-green" disabled>Generar PDF combinado</button>
+            <button type="button" id="pdf-clear-btn" class="btn btn-secondary">Limpiar lista</button>
+          </div>
+          <div id="pdf-status" class="status"></div>
+        </div>
+
+        <div class="box">
+          <strong>Notas prácticas</strong>
+          <p class="hint">• Cada imagen se agrega como una página ajustada al tamaño de hoja.</p>
+          <p class="hint">• La librería <code>pdf-lib</code> se carga solo cuando usas esta pestaña.</p>
+          <p class="hint">• PDFs protegidos con contraseña o firmas digitales pueden rechazar modificaciones.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- MÓDULO 2: FICHA / TARJETA + QR SUBIDO POR EL USUARIO -->
+    <section id="tab-card" class="tool-panel" hidden style="display:none;">
+      <h2>Generador Rápido de Ficha / Tarjeta con QR</h2>
+      <p class="hint">Arma tu tarjeta visual, sube la imagen de tu propio QR (o logo) y descárgala lista en PNG sin depender de internet.</p>
+
+      <div class="grid-2">
+        <div class="box">
+          <label for="card-title">Título / Negocio</label>
+          <input id="card-title" type="text" value="Servicio Express" />
+
+          <label for="card-subtitle">Subtítulo / Especialidad</label>
+          <input id="card-subtitle" type="text" value="Diagnóstico y atención rápida" />
+
+          <label for="card-details">Datos / Horario / Contacto</label>
+          <textarea id="card-details" rows="3">Lun a Vie 9:00 - 18:00 · Cotizaciones sin compromiso</textarea>
+
+          <label for="card-qr-file">Sube tu imagen QR o logo (PNG, JPG, WebP)</label>
+          <div class="row" style="align-items:stretch;">
+            <div style="flex:1;">
+              <input id="card-qr-file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+            </div>
+            <button type="button" id="card-qr-clear" class="btn btn-secondary" style="margin-top:0;">Quitar QR</button>
+          </div>
+
+          <label for="card-qr-caption">Texto debajo del QR (opcional)</label>
+          <input id="card-qr-caption" type="text" value="Escanea para contacto" placeholder="Ej. Escanea para WhatsApp / Ubicación" />
+
+          <div class="row">
+            <div style="flex:1">
+              <label for="card-color">Color principal</label>
+              <input id="card-color" type="color" value="#0f172a" />
+            </div>
+            <div style="flex:1">
+              <label for="card-accent">Color de acento</label>
+              <input id="card-accent" type="color" value="#0284c7" />
+            </div>
+          </div>
+
+          <button type="button" id="card-download-btn" class="btn btn-green">Descargar PNG</button>
+          <div id="card-status" class="status"></div>
+        </div>
+
+        <div class="box">
+          <canvas id="card-canvas" width="800" height="450"></canvas>
+          <p class="hint" style="margin-top:0.65rem;">Tip: puedes usar el QR que te da directamente WhatsApp Business, Mercado Pago, Google Maps o tu banco.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- MÓDULO 3: AUDIO SFX 8-BIT -->
+    <section id="tab-sfx" class="tool-panel" hidden style="display:none;">
+      <h2>Sintetizador de Efectos 8-Bit (Web Audio)</h2>
+      <p class="hint">Genera sonidos retro en el navegador y descárgalos en formato WAV sin depender de librerías externas.</p>
+
+      <div class="grid-2">
+        <div class="box">
+          <label for="sfx-preset">Preset rápido</label>
+          <select id="sfx-preset">
+            <option value="coin">Moneda / Aviso</option>
+            <option value="laser">Láser / Pulso</option>
+            <option value="jump">Salto / Ascenso</option>
+            <option value="explosion">Ruido / Impacto</option>
+          </select>
+
+          <label for="sfx-wave">Forma de onda</label>
+          <select id="sfx-wave">
+            <option value="square">Square (8-bit clásico)</option>
+            <option value="sawtooth">Sawtooth</option>
+            <option value="triangle">Triangle</option>
+            <option value="sine">Sine</option>
+          </select>
+
+          <label for="sfx-start-freq">Frecuencia inicial (Hz)</label>
+          <input id="sfx-start-freq" type="number" min="60" max="3000" value="980" />
+
+          <label for="sfx-end-freq">Frecuencia final (Hz)</label>
+          <input id="sfx-end-freq" type="number" min="40" max="3000" value="1480" />
+
+          <label for="sfx-duration">Duración (segundos)</label>
+          <input id="sfx-duration" type="number" step="0.05" min="0.05" max="2" value="0.16" />
+
+          <div class="row">
+            <button type="button" id="sfx-play-btn" class="btn">Reproducir</button>
+            <button type="button" id="sfx-wav-btn" class="btn btn-green">Descargar .WAV</button>
+          </div>
+          <div id="sfx-status" class="status"></div>
+        </div>
+
+        <div class="box">
+          <strong>Cómo funciona</strong>
+          <p class="hint">• Usa la <code>Web Audio API</code> del navegador para sintetizar y renderizar el audio offline.</p>
+          <p class="hint">• Exporta un archivo <code>.wav</code> PCM de 16 bits listo para editar o usar en prototipos.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const validTabs = ['pdf', 'card', 'sfx'];
+
+      window.abrirPestana = function (target) {
+        if (!validTabs.includes(target)) return;
+
+        validTabs.forEach((name) => {
+          const btn = document.getElementById('btn-tab-' + name);
+          const panel = document.getElementById('tab-' + name);
+          const isSelected = name === target;
+
+          if (btn) {
+            btn.classList.toggle('active', isSelected);
+            btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+          }
+          if (panel) {
+            panel.classList.toggle('active', isSelected);
+            panel.hidden = !isSelected;
+            panel.style.display = isSelected ? 'block' : 'none';
+          }
+        });
+
+        if (target === 'card' && typeof window.renderCard === 'function') {
+          window.renderCard();
+        }
+      };
+
+      // --- CARGADOR BAJO DEMANDA DE SCRIPTS ---
+      const loadedScripts = new Map();
+      function loadScriptOnce(src) {
+        if (loadedScripts.has(src)) return loadedScripts.get(src);
+        const promise = new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.async = true;
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error('No se pudo cargar ' + src));
+          document.head.appendChild(s);
+        });
+        loadedScripts.set(src, promise);
+        return promise;
+      }
+
+      function triggerDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      // --- MÓDULO 1: PDF + EVIDENCIAS ---
+      const pdfInput = document.getElementById('pdf-files');
+      const pdfQueueEl = document.getElementById('pdf-queue');
+      const pdfMergeBtn = document.getElementById('pdf-merge-btn');
+      const pdfClearBtn = document.getElementById('pdf-clear-btn');
+      const pdfWatermark = document.getElementById('pdf-watermark');
+      const pdfStatus = document.getElementById('pdf-status');
+
+      let pdfItems = [];
+
+      function renderPdfQueue() {
+        pdfQueueEl.innerHTML = '';
+        pdfItems.forEach((file, idx) => {
+          const li = document.createElement('li');
+          li.className = 'file-item';
+
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = (idx + 1) + '. ' + file.name;
+
+          const controls = document.createElement('span');
+          controls.className = 'row';
+          controls.style.gap = '0.25rem';
+
+          const upBtn = document.createElement('button');
+          upBtn.type = 'button';
+          upBtn.className = 'mini-btn';
+          upBtn.textContent = '↑';
+          upBtn.disabled = idx === 0;
+          upBtn.addEventListener('click', () => {
+            [pdfItems[idx], pdfItems[idx - 1]] = [pdfItems[idx - 1], pdfItems[idx]];
+            renderPdfQueue();
+          });
+
+          const downBtn = document.createElement('button');
+          downBtn.type = 'button';
+          downBtn.className = 'mini-btn';
+          downBtn.textContent = '↓';
+          downBtn.disabled = idx === pdfItems.length - 1;
+          downBtn.addEventListener('click', () => {
+            [pdfItems[idx], pdfItems[idx + 1]] = [pdfItems[idx + 1], pdfItems[idx]];
+            renderPdfQueue();
+          });
+
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'mini-btn del';
+          delBtn.textContent = '✕';
+          delBtn.addEventListener('click', () => {
+            pdfItems.splice(idx, 1);
+            renderPdfQueue();
+          });
+
+          controls.append(upBtn, downBtn, delBtn);
+          li.append(nameSpan, controls);
+          pdfQueueEl.appendChild(li);
+        });
+        pdfMergeBtn.disabled = pdfItems.length === 0;
+      }
+
+      pdfInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          pdfItems.push(...Array.from(e.target.files));
+          renderPdfQueue();
+          pdfStatus.textContent = '';
+          pdfInput.value = '';
+        }
+      });
+
+      pdfClearBtn.addEventListener('click', () => {
+        pdfItems = [];
+        renderPdfQueue();
+        pdfStatus.textContent = '';
+      });
+
+      pdfMergeBtn.addEventListener('click', async () => {
+        pdfMergeBtn.disabled = true;
+        pdfStatus.textContent = 'Cargando motor PDF...';
+        try {
+          await loadScriptOnce('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js');
+          const { PDFDocument, rgb, StandardFonts } = window.PDFLib;
+          const outPdf = await PDFDocument.create();
+          const font = await outPdf.embedFont(StandardFonts.HelveticaBold);
+
+          for (const file of pdfItems) {
+            pdfStatus.textContent = 'Procesando ' + file.name + '...';
+            const bytes = await file.arrayBuffer();
+
+            if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+              const srcPdf = await PDFDocument.load(bytes);
+              const copied = await outPdf.copyPages(srcPdf, srcPdf.getPageIndices());
+              copied.forEach((p) => outPdf.addPage(p));
+            } else if (file.type === 'image/png' || file.type === 'image/jpeg') {
+              const img = file.type === 'image/png'
+                ? await outPdf.embedPng(bytes)
+                : await outPdf.embedJpg(bytes);
+              const page = outPdf.addPage([612, 792]);
+              const margin = 36;
+              const maxW = page.getWidth() - margin * 2;
+              const maxH = page.getHeight() - margin * 2;
+              const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+              const w = img.width * scale;
+              const h = img.height * scale;
+              page.drawImage(img, {
+                x: (page.getWidth() - w) / 2,
+                y: (page.getHeight() - h) / 2,
+                width: w,
+                height: h
+              });
+            }
+          }
+
+          const note = pdfWatermark.value.trim();
+          if (note) {
+            outPdf.getPages().forEach((page, i) => {
+              page.drawText(note + '  |  Pág. ' + (i + 1), {
+                x: 36,
+                y: 18,
+                size: 9,
+                font,
+                color: rgb(0.4, 0.45, 0.55)
+              });
+            });
+          }
+
+          const mergedBytes = await outPdf.save();
+          triggerDownload(new Blob([mergedBytes], { type: 'application/pdf' }), 'documento-combinado.pdf');
+          pdfStatus.textContent = 'Listo: PDF descargado.';
+        } catch (err) {
+          pdfStatus.textContent = 'Error: ' + err.message;
+        } finally {
+          pdfMergeBtn.disabled = pdfItems.length === 0;
+        }
+      });
+
+      // --- MÓDULO 2: FICHA / TARJETA + QR SUBIDO POR USUARIO ---
+      const cardCanvas = document.getElementById('card-canvas');
+      const cardCtx = cardCanvas.getContext('2d');
+      const cardTitle = document.getElementById('card-title');
+      const cardSubtitle = document.getElementById('card-subtitle');
+      const cardDetails = document.getElementById('card-details');
+      const cardQrFile = document.getElementById('card-qr-file');
+      const cardQrClear = document.getElementById('card-qr-clear');
+      const cardQrCaption = document.getElementById('card-qr-caption');
+      const cardColor = document.getElementById('card-color');
+      const cardAccent = document.getElementById('card-accent');
+      const cardDownloadBtn = document.getElementById('card-download-btn');
+      const cardStatus = document.getElementById('card-status');
+
+      let uploadedQrImage = null;
+
+      function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+        const words = String(text || '').split(/\s+/).filter(Boolean);
+        let line = '';
+        let curY = y;
+        for (const word of words) {
+          const test = line ? line + ' ' + word : word;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            ctx.fillText(line, x, curY);
+            line = word;
+            curY += lineHeight;
+          } else {
+            line = test;
+          }
+        }
+        if (line) {
+          ctx.fillText(line, x, curY);
+        } else {
+          curY -= lineHeight;
+        }
+        return curY;
+      }
+
+      function drawQrPlaceholder(x, y, size) {
+        cardCtx.save();
+        cardCtx.strokeStyle = '#94a3b8';
+        cardCtx.setLineDash([6, 4]);
+        cardCtx.lineWidth = 2;
+        cardCtx.strokeRect(x, y, size, size);
+        cardCtx.setLineDash([]);
+        cardCtx.fillStyle = '#64748b';
+        cardCtx.font = '600 15px system-ui, sans-serif';
+        cardCtx.textAlign = 'center';
+        cardCtx.fillText('Sube aquí tu QR', x + size / 2, y + size / 2 - 4);
+        cardCtx.font = '12px system-ui, sans-serif';
+        cardCtx.fillText('(PNG / JPG)', x + size / 2, y + size / 2 + 16);
+        cardCtx.restore();
+      }
+
+      window.renderCard = function () {
+        const w = cardCanvas.width;
+        const h = cardCanvas.height;
+
+        cardCtx.clearRect(0, 0, w, h);
+        cardCtx.fillStyle = '#ffffff';
+        cardCtx.fillRect(0, 0, w, h);
+
+        cardCtx.fillStyle = cardColor.value;
+        cardCtx.fillRect(0, 0, 26, h);
+
+        cardCtx.fillStyle = cardAccent.value;
+        cardCtx.fillRect(26, 0, 8, h);
+
+        cardCtx.fillStyle = cardColor.value;
+        cardCtx.font = 'bold 34px system-ui, sans-serif';
+        const afterTitle = wrapText(cardCtx, cardTitle.value || 'Título', 64, 82, 460, 42);
+
+        cardCtx.fillStyle = cardAccent.value;
+        cardCtx.font = '600 20px system-ui, sans-serif';
+        const afterSub = wrapText(cardCtx, cardSubtitle.value || '', 64, afterTitle + 34, 460, 28);
+
+        cardCtx.fillStyle = '#334155';
+        cardCtx.font = '400 18px system-ui, sans-serif';
+        wrapText(cardCtx, cardDetails.value || '', 64, afterSub + 42, 460, 26);
+
+        const qrSize = 190;
+        const qrX = w - 235;
+        const qrY = h / 2 - qrSize / 2 - 10;
+
+        if (uploadedQrImage) {
+          cardCtx.save();
+          cardCtx.fillStyle = '#ffffff';
+          cardCtx.strokeStyle = '#cbd5e1';
+          cardCtx.lineWidth = 2;
+          cardCtx.fillRect(qrX - 6, qrY - 6, qrSize + 12, qrSize + 12);
+          cardCtx.strokeRect(qrX - 6, qrY - 6, qrSize + 12, qrSize + 12);
+
+          // Ajusta la imagen manteniendo proporción centrada en el recuadro cuadrado
+          const scale = Math.min(qrSize / uploadedQrImage.width, qrSize / uploadedQrImage.height);
+          const drawW = uploadedQrImage.width * scale;
+          const drawH = uploadedQrImage.height * scale;
+          const offsetX = qrX + (qrSize - drawW) / 2;
+          const offsetY = qrY + (qrSize - drawH) / 2;
+          cardCtx.drawImage(uploadedQrImage, offsetX, offsetY, drawW, drawH);
+          cardCtx.restore();
+        } else {
+          drawQrPlaceholder(qrX, qrY, qrSize);
+        }
+
+        const caption = (cardQrCaption.value || '').trim();
+        if (caption) {
+          cardCtx.save();
+          cardCtx.fillStyle = '#475569';
+          cardCtx.font = '600 13px system-ui, sans-serif';
+          cardCtx.textAlign = 'center';
+          cardCtx.fillText(caption, qrX + qrSize / 2, qrY + qrSize + 26, qrSize + 24);
+          cardCtx.restore();
+        }
+      };
+
+      cardQrFile.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            uploadedQrImage = img;
+            window.renderCard();
+            cardStatus.textContent = 'Imagen QR cargada en la tarjeta.';
+          };
+          img.onerror = () => {
+            cardStatus.textContent = 'No se pudo leer esa imagen.';
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      cardQrClear.addEventListener('click', () => {
+        uploadedQrImage = null;
+        cardQrFile.value = '';
+        window.renderCard();
+        cardStatus.textContent = 'QR quitado.';
+      });
+
+      [cardTitle, cardSubtitle, cardDetails, cardQrCaption, cardColor, cardAccent].forEach((el) => {
+        el.addEventListener('input', window.renderCard);
+      });
+
+      cardDownloadBtn.addEventListener('click', () => {
+        cardCanvas.toBlob((blob) => {
+          if (blob) {
+            triggerDownload(blob, 'ficha-tarjeta.png');
+            cardStatus.textContent = 'PNG descargado.';
+          }
+        }, 'image/png');
+      });
+
+      window.renderCard();
+
+      // --- MÓDULO 3: AUDIO SFX 8-BIT ---
+      const sfxPreset = document.getElementById('sfx-preset');
+      const sfxWave = document.getElementById('sfx-wave');
+      const sfxStartFreq = document.getElementById('sfx-start-freq');
+      const sfxEndFreq = document.getElementById('sfx-end-freq');
+      const sfxDuration = document.getElementById('sfx-duration');
+      const sfxPlayBtn = document.getElementById('sfx-play-btn');
+      const sfxWavBtn = document.getElementById('sfx-wav-btn');
+      const sfxStatus = document.getElementById('sfx-status');
+
+      const presets = {
+        coin: { wave: 'square', start: 980, end: 1480, dur: 0.16 },
+        laser: { wave: 'sawtooth', start: 1200, end: 140, dur: 0.22 },
+        jump: { wave: 'square', start: 220, end: 760, dur: 0.25 },
+        explosion: { wave: 'triangle', start: 180, end: 45, dur: 0.45 }
+      };
+
+      sfxPreset.addEventListener('change', () => {
+        const p = presets[sfxPreset.value];
+        if (!p) return;
+        sfxWave.value = p.wave;
+        sfxStartFreq.value = p.start;
+        sfxEndFreq.value = p.end;
+        sfxDuration.value = p.dur;
+      });
+
+      async function renderSfxBuffer() {
+        const dur = Math.max(0.05, Math.min(2, Number(sfxDuration.value) || 0.25));
+        const f0 = Math.max(40, Math.min(3000, Number(sfxStartFreq.value) || 440));
+        const f1 = Math.max(40, Math.min(3000, Number(sfxEndFreq.value) || 880));
+        const sampleRate = 44100;
+        const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        const ctx = new OfflineCtx(1, Math.ceil(sampleRate * dur), sampleRate);
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = sfxWave.value;
+        osc.frequency.setValueAtTime(f0, 0);
+        osc.frequency.exponentialRampToValueAtTime(f1, dur);
+
+        gain.gain.setValueAtTime(0.25, 0);
+        gain.gain.exponentialRampToValueAtTime(0.001, dur);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(0);
+        osc.stop(dur);
+        return ctx.startRendering();
+      }
+
+      function audioBufferToWav(buffer) {
+        const samples = buffer.getChannelData(0);
+        const len = samples.length * 2;
+        const out = new ArrayBuffer(44 + len);
+        const view = new DataView(out);
+
+        const writeStr = (off, str) => {
+          for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i));
+        };
+
+        writeStr(0, 'RIFF');
+        view.setUint32(4, 36 + len, true);
+        writeStr(8, 'WAVE');
+        writeStr(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, buffer.sampleRate, true);
+        view.setUint32(28, buffer.sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeStr(36, 'data');
+        view.setUint32(40, len, true);
+
+        let offset = 44;
+        for (let i = 0; i < samples.length; i++, offset += 2) {
+          const s = Math.max(-1, Math.min(1, samples[i]));
+          view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+        }
+        return new Blob([out], { type: 'audio/wav' });
+      }
+
+      sfxPlayBtn.addEventListener('click', async () => {
+        try {
+          const rendered = await renderSfxBuffer();
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          const playCtx = new AudioCtx();
+          if (playCtx.state === 'suspended') await playCtx.resume();
+          const src = playCtx.createBufferSource();
+          src.buffer = rendered;
+          src.connect(playCtx.destination);
+          src.start();
+          src.onended = () => playCtx.close();
+          sfxStatus.textContent = 'Reproducido.';
+        } catch (err) {
+          sfxStatus.textContent = 'Error de audio: ' + err.message;
+        }
+      });
+
+      sfxWavBtn.addEventListener('click', async () => {
+        try {
+          const rendered = await renderSfxBuffer();
+          const wavBlob = audioBufferToWav(rendered);
+          triggerDownload(wavBlob, 'sfx-' + (sfxPreset.value || 'retro') + '.wav');
+          sfxStatus.textContent = 'Archivo .WAV descargado.';
+        } catch (err) {
+          sfxStatus.textContent = 'Error al exportar: ' + err.message;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
