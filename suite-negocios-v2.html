@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suite Negocios Express · Zero-Upload</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #0b1220;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --border: #334155;
+      --danger: #f87171;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      background: var(--panel-2);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .tab-btn {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      touch-action: manipulation;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #06202a;
+      border-color: var(--accent);
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 1.5rem auto;
+      padding: 0 1rem 3rem;
+    }
+
+    .tool-panel {
+      display: none;
+    }
+
+    .tool-panel.active {
+      display: block;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+
+    .card h2 {
+      margin: 0 0 0.25rem;
+      font-size: 1.05rem;
+    }
+
+    .hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0 0 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.84rem;
+      color: var(--muted);
+      margin-top: 0.85rem;
+      margin-bottom: 0.35rem;
+    }
+
+    label:first-of-type { margin-top: 0; }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="tel"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      font-size: 0.94rem;
+      font-family: inherit;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .row {
+      display: flex;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .row > .col {
+      flex: 1 1 140px;
+    }
+
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .tpl-btn {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 0.55rem 0.45rem;
+      cursor: pointer;
+      font-size: 0.82rem;
+      text-align: center;
+      font-weight: 600;
+      touch-action: manipulation;
+    }
+
+    .tpl-btn .swatch {
+      display: block;
+      height: 14px;
+      border-radius: 4px;
+      margin-bottom: 0.35rem;
+    }
+
+    .tpl-btn.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      margin-top: 0.5rem;
+    }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 1fr 115px 34px;
+      gap: 0.45rem;
+      align-items: center;
+    }
+
+    .del-btn {
+      background: rgba(248, 113, 113, 0.14);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: var(--danger);
+      border-radius: 8px;
+      height: 36px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .btn {
+      margin-top: 0.85rem;
+      background: var(--accent);
+      color: #06202a;
+      border: none;
+      padding: 0.62rem 1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9rem;
+      touch-action: manipulation;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover { filter: brightness(1.07); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+    }
+
+    .btn-green {
+      background: var(--accent-2);
+      color: #052e16;
+    }
+
+    .btn-full {
+      width: 100%;
+      font-size: 0.96rem;
+      padding: 0.75rem;
+    }
+
+    .total-bar {
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.02rem;
+      font-weight: 700;
+    }
+
+    .total-bar span:last-child {
+      color: #86efac;
+      font-size: 1.22rem;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.65rem;
+      margin-top: 0.75rem;
+    }
+
+    .stat-box {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem;
+    }
+
+    .stat-box small {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .stat-box strong {
+      display: block;
+      font-size: 1.15rem;
+      margin-top: 0.2rem;
+      color: #86efac;
+    }
+
+    /* Vista previa cotizacion */
+    .preview-sheet {
+      border-radius: 10px;
+      padding: 1.25rem;
+      min-height: 440px;
+      border: 1px solid var(--border);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: flex-start;
+      border-bottom: 2px solid currentColor;
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .preview-biz {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .preview-sub {
+      font-size: 0.82rem;
+      opacity: 0.85;
+      margin: 0.2rem 0 0;
+    }
+
+    .preview-photo-box {
+      margin-bottom: 0.9rem;
+      text-align: center;
+    }
+
+    .preview-photo-box img {
+      max-width: 100%;
+      max-height: 175px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    .preview-table th,
+    .preview-table td {
+      padding: 0.45rem 0.35rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .preview-table th:last-child,
+    .preview-table td:last-child {
+      text-align: right;
+    }
+
+    .preview-total {
+      margin-top: 0.9rem;
+      text-align: right;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .preview-note {
+      margin-top: 1rem;
+      font-size: 0.78rem;
+      opacity: 0.8;
+    }
+
+    .status {
+      margin-top: 0.65rem;
+      font-size: 0.84rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Suite Negocios Express</h1>
+      <span class="badge">100% en tu navegador · Sin subir datos</span>
+    </div>
+    <nav id="tabs-nav" aria-label="Herramientas">
+      <button type="button" id="btn-tab-quote" class="tab-btn active" onclick="window.abrirPestana('quote')">1. Cotizador PDF</button>
+      <button type="button" id="btn-tab-wa" class="tab-btn" onclick="window.abrirPestana('wa')">2. Enlace WhatsApp</button>
+      <button type="button" id="btn-tab-text" class="tab-btn" onclick="window.abrirPestana('text')">3. Limpiador de Texto</button>
+      <button type="button" id="btn-tab-calc" class="tab-btn" onclick="window.abrirPestana('calc')">4. Precio y Margen</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- PESTAÑA 1: COTIZADOR PDF -->
+    <section id="tab-quote" class="tool-panel active">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Cotizador Express PDF</h2>
+          <p class="hint">Completa los conceptos, adjunta una foto de referencia si quieres y descarga el PDF personalizado.</p>
+
+          <label for="biz-name">Nombre del negocio</label>
+          <input id="biz-name" type="text" value="Mi Negocio" placeholder="Ej. Taller / Servicios / Estudio" />
+
+          <div class="row">
+            <div class="col">
+              <label for="client-name">Cliente / Referencia (opcional)</label>
+              <input id="client-name" type="text" placeholder="Ej. Juan Pérez · Folio #014" />
+            </div>
+            <div class="col">
+              <label for="quote-date">Fecha</label>
+              <input id="quote-date" type="text" />
+            </div>
+          </div>
+
+          <label for="biz-contact">Teléfono / Notas al pie (opcional)</label>
+          <input id="biz-contact" type="text" placeholder="Ej. Tel. 55 0000 0000 · Vigencia 7 días" />
+
+          <label for="quote-photo">Foto de referencia / evidencia (JPG o PNG)</label>
+          <div class="row">
+            <div class="col">
+              <input id="quote-photo" type="file" accept="image/png,image/jpeg,image/webp" />
+            </div>
+            <button type="button" id="clear-photo-btn" class="btn btn-secondary" style="margin-top:0;">Quitar foto</button>
+          </div>
+
+          <label>Plantilla de fondo</label>
+          <div class="templates-grid" id="tpl-grid">
+            <button type="button" class="tpl-btn active" data-tpl="classic">
+              <span class="swatch" style="background:linear-gradient(90deg,#0f172a 25%,#f8fafc 25%);"></span>
+              Clásica Clara
+            </button>
+            <button type="button" class="tpl-btn" data-tpl="blueprint">
+              <span class="swatch" style="background:linear-gradient(90deg,#0284c7 25%,#e0f2fe 25%);"></span>
+              Ficha Técnica
+            </button>
+            <button type="button" class="tpl-btn" data-tpl="dark">
+              <span class="swatch" style="background:linear-gradient(90deg,#22c55e 25%,#0f172a 25%);"></span>
+              Oscura Pro
+            </button>
+          </div>
+          <p class="hint" style="margin-top:0.45rem;">Las plantillas base son libres; guardar plantilla fija queda reservado para suscripciones activas.</p>
+
+          <label>Conceptos y montos</label>
+          <div id="items-list" class="items-list"></div>
+
+          <div class="row">
+            <button type="button" id="add-item-btn" class="btn btn-secondary">+ Agregar concepto</button>
+            <button type="button" id="reset-items-btn" class="btn btn-secondary">Limpiar conceptos</button>
+          </div>
+
+          <div class="total-bar">
+            <span>Total estimado</span>
+            <span id="total-display">$0.00</span>
+          </div>
+
+          <button type="button" id="generate-pdf-btn" class="btn btn-green btn-full">Descargar Cotización en PDF</button>
+          <div id="pdf-status" class="status"></div>
+        </div>
+
+        <div class="card">
+          <h2>Vista previa rápida</h2>
+          <p class="hint">Así se estructurará tu documento al exportarlo.</p>
+
+          <div id="preview-sheet" class="preview-sheet">
+            <div class="preview-header">
+              <div>
+                <h3 id="prev-biz" class="preview-biz">Mi Negocio</h3>
+                <p id="prev-client" class="preview-sub"></p>
+              </div>
+              <div style="text-align:right;">
+                <strong style="font-size:0.85rem;">COTIZACIÓN</strong>
+                <p id="prev-date" class="preview-sub"></p>
+              </div>
+            </div>
+
+            <div id="prev-photo-wrap" class="preview-photo-box" style="display:none;">
+              <img id="prev-photo" alt="Vista previa de foto" />
+            </div>
+
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th>Concepto</th>
+                  <th>Monto</th>
+                </tr>
+              </thead>
+              <tbody id="prev-tbody"></tbody>
+            </table>
+
+            <div id="prev-total" class="preview-total">Total: $0.00</div>
+            <div id="prev-footer" class="preview-note"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 2: GENERADOR DE ENLACE DIRECTO WHATSAPP -->
+    <section id="tab-wa" class="tool-panel" hidden style="display:none;">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Generador de Enlace Directo y Mensaje de WhatsApp</h2>
+          <p class="hint">Arma un enlace directo con mensaje prellenado para compartir por redes, tarjetas o botones web.</p>
+
+          <div class="row">
+            <div class="col" style="max-width:130px;">
+              <label for="wa-code">Lada / País</label>
+              <input id="wa-code" type="text" value="52" placeholder="52" />
+            </div>
+            <div class="col">
+              <label for="wa-phone">Número de teléfono (10 dígitos)</label>
+              <input id="wa-phone" type="tel" placeholder="Ej. 7221234567" />
+            </div>
+          </div>
+
+          <label for="wa-msg">Mensaje prellenado</label>
+          <textarea id="wa-msg" rows="4" placeholder="Hola, me gustaría solicitar una cotización..."></textarea>
+
+          <div class="row">
+            <button type="button" class="btn btn-secondary" data-wa-preset="Hola, me interesa cotizar un servicio.">Preset: Cotización</button>
+            <button type="button" class="btn btn-secondary" data-wa-preset="Hola, quiero agendar una cita o revisión.">Preset: Cita</button>
+            <button type="button" class="btn btn-secondary" data-wa-preset="Hola, te comparto mi comprobante / datos:">Preset: Seguimiento</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Enlace listo para usar</h2>
+          <p class="hint">Cópialo al portapapeles o pruébalo directo.</p>
+
+          <label for="wa-output">URL generada</label>
+          <textarea id="wa-output" rows="4" readonly></textarea>
+
+          <div class="row">
+            <button type="button" id="wa-copy-btn" class="btn btn-green">Copiar enlace al instante</button>
+            <a id="wa-open-link" class="btn" href="https://wa.me/" target="_blank" rel="noopener noreferrer">Abrir en WhatsApp</a>
+          </div>
+          <div id="wa-status" class="status"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 3: LIMPIADOR / FORMATEADOR RÁPIDO DE TEXTO -->
+    <section id="tab-text" class="tool-panel" hidden style="display:none;">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Limpiador y Formateador Rápido de Texto</h2>
+          <p class="hint">Limpia textos copiados de PDFs, chats o listas sin subir nada a internet.</p>
+
+          <label for="txt-input">Pega aquí tu texto</label>
+          <textarea id="txt-input" rows="9" placeholder="Pega aquí párrafos rotos, listas con líneas repetidas o texto desordenado..."></textarea>
+
+          <div class="row">
+            <button type="button" class="btn btn-secondary" data-txt-op="spaces">Quitar espacios extra</button>
+            <button type="button" class="btn btn-secondary" data-txt-op="lines">Unir saltos de línea</button>
+            <button type="button" class="btn btn-secondary" data-txt-op="dedupe">Quitar líneas duplicadas</button>
+            <button type="button" class="btn btn-secondary" data-txt-op="upper">MAYÚSCULAS</button>
+            <button type="button" class="btn btn-secondary" data-txt-op="lower">minúsculas</button>
+            <button type="button" class="btn btn-secondary" data-txt-op="title">Tipo Título</button>
+            <button type="button" class="btn btn-secondary" data-txt-op="extract">Extraer enlaces y correos</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Resultado limpio</h2>
+          <p id="txt-counters" class="hint">0 caracteres · 0 palabras · 0 líneas</p>
+
+          <label for="txt-output">Texto procesado</label>
+          <textarea id="txt-output" rows="9" readonly></textarea>
+
+          <div class="row">
+            <button type="button" id="txt-copy-btn" class="btn btn-green">Copiar resultado</button>
+            <button type="button" id="txt-use-btn" class="btn btn-secondary">Seguir editando este resultado</button>
+            <button type="button" id="txt-clear-btn" class="btn btn-secondary">Limpiar</button>
+          </div>
+          <div id="txt-status" class="status"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 4: CALCULADORA RÁPIDA DE PRECIO / MARGEN / GANANCIA -->
+    <section id="tab-calc" class="tool-panel" hidden style="display:none;">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Calculadora Rápida de Precio, Margen y Ganancia</h2>
+          <p class="hint">Calcula precio de venta sugerido, ganancia neta y margen real al instante.</p>
+
+          <label for="calc-cost">Costo base del producto o servicio ($)</label>
+          <input id="calc-cost" type="number" step="0.01" min="0" value="500" />
+
+          <div class="row">
+            <div class="col">
+              <label for="calc-mode">Modo de cálculo</label>
+              <select id="calc-mode">
+                <option value="markup">Sumar % sobre el costo (Markup)</option>
+                <option value="margin">Fijar % de margen sobre precio final</option>
+              </select>
+            </div>
+            <div class="col">
+              <label for="calc-pct">Porcentaje deseado (%)</label>
+              <input id="calc-pct" type="number" step="0.1" min="0" max="99.9" value="35" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <label for="calc-fee">Comisión / Extra fijo ($ opcional)</label>
+              <input id="calc-fee" type="number" step="0.01" min="0" value="0" />
+            </div>
+            <div class="col">
+              <label for="calc-tax">Impuesto / IVA adicional (%)</label>
+              <input id="calc-tax" type="number" step="0.1" min="0" value="0" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Desglose instantáneo</h2>
+          <p class="hint">Úsalo como referencia rápida antes de armar tu cotización.</p>
+
+          <div class="stat-grid">
+            <div class="stat-box">
+              <small>Precio antes de IVA</small>
+              <strong id="res-subtotal">$0.00</strong>
+            </div>
+            <div class="stat-box">
+              <small>Precio final al cliente</small>
+              <strong id="res-final">$0.00</strong>
+            </div>
+            <div class="stat-box">
+              <small>Ganancia neta</small>
+              <strong id="res-profit">$0.00</strong>
+            </div>
+            <div class="stat-box">
+              <small>Margen real (%)</small>
+              <strong id="res-margin">0.0%</strong>
+            </div>
+          </div>
+
+          <button type="button" id="calc-copy-btn" class="btn btn-green btn-full">Copiar resumen de cálculo</button>
+          <div id="calc-status" class="status"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const validTabs = ['quote', 'wa', 'text', 'calc'];
+
+      window.abrirPestana = function (target) {
+        if (!validTabs.includes(target)) return;
+        validTabs.forEach((name) => {
+          const btn = document.getElementById('btn-tab-' + name);
+          const panel = document.getElementById('tab-' + name);
+          const isSelected = name === target;
+          if (btn) {
+            btn.classList.toggle('active', isSelected);
+            btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+          }
+          if (panel) {
+            panel.classList.toggle('active', isSelected);
+            panel.hidden = !isSelected;
+            panel.style.display = isSelected ? 'block' : 'none';
+          }
+        });
+      };
+
+      function copyText(text, statusEl) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            if (statusEl) statusEl.textContent = 'Copiado al portapapeles.';
+          }).catch(() => fallbackCopy(text, statusEl));
+        } else {
+          fallbackCopy(text, statusEl);
+        }
+      }
+
+      function fallbackCopy(text, statusEl) {
+        const tmp = document.createElement('textarea');
+        tmp.value = text;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        if (statusEl) statusEl.textContent = 'Copiado al portapapeles.';
+      }
+
+      // ==========================================
+      // 1. COTIZADOR PDF
+      // ==========================================
+      const TEMPLATES = {
+        classic: {
+          bgCss: '#ffffff',
+          fgCss: '#0f172a',
+          accentCss: '#0284c7',
+          pdfBg: [1, 1, 1],
+          pdfHeader: [0.06, 0.09, 0.16],
+          pdfAccent: [0.01, 0.52, 0.78],
+          pdfText: [0.12, 0.16, 0.23],
+          pdfMuted: [0.39, 0.45, 0.55],
+          pdfRowAlt: [0.96, 0.97, 0.99]
+        },
+        blueprint: {
+          bgCss: '#f0f9ff',
+          fgCss: '#0c4a6e',
+          accentCss: '#0369a1',
+          pdfBg: [0.94, 0.98, 1],
+          pdfHeader: [0.05, 0.29, 0.43],
+          pdfAccent: [0.01, 0.41, 0.63],
+          pdfText: [0.05, 0.24, 0.36],
+          pdfMuted: [0.27, 0.46, 0.58],
+          pdfRowAlt: [0.88, 0.95, 0.99]
+        },
+        dark: {
+          bgCss: '#0f172a',
+          fgCss: '#f8fafc',
+          accentCss: '#22c55e',
+          pdfBg: [0.06, 0.09, 0.16],
+          pdfHeader: [0.13, 0.77, 0.37],
+          pdfAccent: [0.13, 0.77, 0.37],
+          pdfText: [0.96, 0.98, 0.99],
+          pdfMuted: [0.64, 0.72, 0.82],
+          pdfRowAlt: [0.11, 0.16, 0.26]
+        }
+      };
+
+      let currentTpl = 'classic';
+      let photoDataUrl = null;
+      let items = [
+        { desc: 'Servicio / Revisión general', amount: 450 },
+        { desc: 'Materiales / Refacciones', amount: 300 }
+      ];
+
+      const bizNameEl = document.getElementById('biz-name');
+      const clientNameEl = document.getElementById('client-name');
+      const quoteDateEl = document.getElementById('quote-date');
+      const bizContactEl = document.getElementById('biz-contact');
+      const photoInputEl = document.getElementById('quote-photo');
+      const clearPhotoBtn = document.getElementById('clear-photo-btn');
+      const tplGridEl = document.getElementById('tpl-grid');
+      const itemsListEl = document.getElementById('items-list');
+      const addItemBtn = document.getElementById('add-item-btn');
+      const resetItemsBtn = document.getElementById('reset-items-btn');
+      const totalDisplayEl = document.getElementById('total-display');
+      const generatePdfBtn = document.getElementById('generate-pdf-btn');
+      const pdfStatusEl = document.getElementById('pdf-status');
+
+      const previewSheetEl = document.getElementById('preview-sheet');
+      const prevBizEl = document.getElementById('prev-biz');
+      const prevClientEl = document.getElementById('prev-client');
+      const prevDateEl = document.getElementById('prev-date');
+      const prevPhotoWrapEl = document.getElementById('prev-photo-wrap');
+      const prevPhotoEl = document.getElementById('prev-photo');
+      const prevTbodyEl = document.getElementById('prev-tbody');
+      const prevTotalEl = document.getElementById('prev-total');
+      const prevFooterEl = document.getElementById('prev-footer');
+
+      quoteDateEl.value = new Date().toLocaleDateString('es-MX');
+
+      function formatMoney(num) {
+        const val = Number(num) || 0;
+        return '$' + val.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      function getTotal() {
+        return items.reduce((acc, it) => acc + (Number(it.amount) || 0), 0);
+      }
+
+      function renderItemsEditor() {
+        itemsListEl.innerHTML = '';
+        items.forEach((item, idx) => {
+          const row = document.createElement('div');
+          row.className = 'item-row';
+
+          const descInput = document.createElement('input');
+          descInput.type = 'text';
+          descInput.placeholder = 'Concepto #' + (idx + 1);
+          descInput.value = item.desc;
+          descInput.addEventListener('input', () => {
+            items[idx].desc = descInput.value;
+            updatePreview();
+          });
+
+          const amtInput = document.createElement('input');
+          amtInput.type = 'number';
+          amtInput.step = '0.01';
+          amtInput.min = '0';
+          amtInput.placeholder = '0.00';
+          amtInput.value = item.amount === '' ? '' : item.amount;
+          amtInput.addEventListener('input', () => {
+            items[idx].amount = amtInput.value === '' ? '' : Number(amtInput.value);
+            updatePreview();
+          });
+
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'del-btn';
+          delBtn.textContent = '✕';
+          delBtn.title = 'Eliminar fila';
+          delBtn.addEventListener('click', () => {
+            items.splice(idx, 1);
+            if (items.length === 0) items.push({ desc: '', amount: '' });
+            renderItemsEditor();
+            updatePreview();
+          });
+
+          row.append(descInput, amtInput, delBtn);
+          itemsListEl.appendChild(row);
+        });
+      }
+
+      function updatePreview() {
+        const tpl = TEMPLATES[currentTpl] || TEMPLATES.classic;
+        previewSheetEl.style.background = tpl.bgCss;
+        previewSheetEl.style.color = tpl.fgCss;
+
+        prevBizEl.textContent = bizNameEl.value.trim() || 'Mi Negocio';
+        prevClientEl.textContent = clientNameEl.value.trim();
+        prevDateEl.textContent = quoteDateEl.value.trim();
+        prevFooterEl.textContent = bizContactEl.value.trim();
+
+        if (photoDataUrl) {
+          prevPhotoWrapEl.style.display = 'block';
+          prevPhotoEl.src = photoDataUrl;
+        } else {
+          prevPhotoWrapEl.style.display = 'none';
+          prevPhotoEl.removeAttribute('src');
+        }
+
+        prevTbodyEl.innerHTML = '';
+        items.forEach((it) => {
+          const tr = document.createElement('tr');
+          const tdDesc = document.createElement('td');
+          tdDesc.textContent = it.desc.trim() || '(Sin descripción)';
+          const tdAmt = document.createElement('td');
+          tdAmt.textContent = formatMoney(it.amount);
+          tr.append(tdDesc, tdAmt);
+          prevTbodyEl.appendChild(tr);
+        });
+
+        const total = getTotal();
+        totalDisplayEl.textContent = formatMoney(total);
+        prevTotalEl.textContent = 'Total: ' + formatMoney(total);
+        prevTotalEl.style.color = tpl.accentCss;
+      }
+
+      tplGridEl.addEventListener('click', (e) => {
+        const btn = e.target.closest('.tpl-btn');
+        if (!btn) return;
+        currentTpl = btn.dataset.tpl;
+        tplGridEl.querySelectorAll('.tpl-btn').forEach((b) => {
+          b.classList.toggle('active', b === btn);
+        });
+        updatePreview();
+      });
+
+      addItemBtn.addEventListener('click', () => {
+        items.push({ desc: '', amount: '' });
+        renderItemsEditor();
+        updatePreview();
+      });
+
+      resetItemsBtn.addEventListener('click', () => {
+        items = [{ desc: '', amount: '' }];
+        renderItemsEditor();
+        updatePreview();
+      });
+
+      photoInputEl.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const maxDim = 900;
+            const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            photoDataUrl = canvas.toDataURL('image/jpeg', 0.84);
+            updatePreview();
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      clearPhotoBtn.addEventListener('click', () => {
+        photoDataUrl = null;
+        photoInputEl.value = '';
+        updatePreview();
+      });
+
+      [bizNameEl, clientNameEl, quoteDateEl, bizContactEl].forEach((el) => {
+        el.addEventListener('input', updatePreview);
+      });
+
+      let pdfLibPromise = null;
+      function loadPdfLib() {
+        if (window.PDFLib) return Promise.resolve();
+        if (pdfLibPromise) return pdfLibPromise;
+        pdfLibPromise = new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+          s.async = true;
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error('No se pudo cargar el motor PDF (verifica tu conexión).'));
+          document.head.appendChild(s);
+        });
+        return pdfLibPromise;
+      }
+
+      function safePdfText(str) {
+        return String(str || '').replace(/[^\x20-\x7E\xA0-\xFF]/g, ' ');
+      }
+
+      function wrapPdfLines(text, font, size, maxWidth) {
+        const words = safePdfText(text).split(/\s+/).filter(Boolean);
+        if (words.length === 0) return [''];
+        const lines = [];
+        let line = '';
+        for (const w of words) {
+          const test = line ? line + ' ' + w : w;
+          if (font.widthOfTextAtSize(test, size) > maxWidth && line) {
+            lines.push(line);
+            line = w;
+          } else {
+            line = test;
+          }
+        }
+        if (line) lines.push(line);
+        return lines;
+      }
+
+      generatePdfBtn.addEventListener('click', async () => {
+        generatePdfBtn.disabled = true;
+        pdfStatusEl.textContent = 'Generando PDF...';
+        try {
+          await loadPdfLib();
+          const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
+          const tpl = TEMPLATES[currentTpl] || TEMPLATES.classic;
+
+          const pdfDoc = await PDFDocument.create();
+          const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+          const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+          const pageW = 612;
+          const pageH = 792;
+          const margin = 44;
+
+          function newStyledPage() {
+            const p = pdfDoc.addPage([pageW, pageH]);
+            p.drawRectangle({ x: 0, y: 0, width: pageW, height: pageH, color: rgb(...tpl.pdfBg) });
+            p.drawRectangle({ x: 0, y: 0, width: 14, height: pageH, color: rgb(...tpl.pdfAccent) });
+            return p;
+          }
+
+          let page = newStyledPage();
+          let y = pageH - 52;
+
+          const bizTitle = safePdfText(bizNameEl.value.trim() || 'Mi Negocio');
+          page.drawText(bizTitle, { x: margin, y, size: 20, font: fontBold, color: rgb(...tpl.pdfHeader) });
+
+          const tagText = 'COTIZACION';
+          const tagW = fontBold.widthOfTextAtSize(tagText, 12);
+          page.drawText(tagText, { x: pageW - margin - tagW, y: y + 4, size: 12, font: fontBold, color: rgb(...tpl.pdfAccent) });
+
+          y -= 18;
+          const clientStr = safePdfText(clientNameEl.value.trim());
+          if (clientStr) {
+            page.drawText(clientStr, { x: margin, y, size: 10.5, font: fontRegular, color: rgb(...tpl.pdfMuted) });
+          }
+
+          const dateStr = safePdfText(quoteDateEl.value.trim());
+          if (dateStr) {
+            const dW = fontRegular.widthOfTextAtSize(dateStr, 10);
+            page.drawText(dateStr, { x: pageW - margin - dW, y, size: 10, font: fontRegular, color: rgb(...tpl.pdfMuted) });
+          }
+
+          y -= 14;
+          page.drawLine({ start: { x: margin, y }, end: { x: pageW - margin, y }, thickness: 1.5, color: rgb(...tpl.pdfAccent) });
+          y -= 20;
+
+          if (photoDataUrl) {
+            const base64 = photoDataUrl.split(',')[1];
+            const binStr = atob(base64);
+            const bytes = new Uint8Array(binStr.length);
+            for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+
+            const jpgImg = await pdfDoc.embedJpg(bytes);
+            const maxImgW = pageW - margin * 2;
+            const maxImgH = 190;
+            const scale = Math.min(maxImgW / jpgImg.width, maxImgH / jpgImg.height, 1);
+            const drawW = jpgImg.width * scale;
+            const drawH = jpgImg.height * scale;
+
+            page.drawImage(jpgImg, { x: (pageW - drawW) / 2, y: y - drawH, width: drawW, height: drawH });
+            y -= drawH + 22;
+          }
+
+          const tableW = pageW - margin * 2;
+          page.drawRectangle({ x: margin, y: y - 22, width: tableW, height: 24, color: rgb(...tpl.pdfAccent) });
+          page.drawText('CONCEPTO', { x: margin + 10, y: y - 14, size: 10, font: fontBold, color: rgb(1, 1, 1) });
+          const amtHdr = 'MONTO';
+          const amtHdrW = fontBold.widthOfTextAtSize(amtHdr, 10);
+          page.drawText(amtHdr, { x: pageW - margin - 10 - amtHdrW, y: y - 14, size: 10, font: fontBold, color: rgb(1, 1, 1) });
+          y -= 28;
+
+          items.forEach((it, idx) => {
+            const descLines = wrapPdfLines(it.desc.trim() || '(Sin descripcion)', fontRegular, 10.5, tableW - 130);
+            const rowH = Math.max(24, descLines.length * 14 + 10);
+
+            if (y - rowH < 90) {
+              page = newStyledPage();
+              y = pageH - 52;
+            }
+
+            if (idx % 2 === 1) {
+              page.drawRectangle({ x: margin, y: y - rowH + 4, width: tableW, height: rowH, color: rgb(...tpl.pdfRowAlt) });
+            }
+
+            descLines.forEach((ln, lIdx) => {
+              page.drawText(ln, { x: margin + 10, y: y - 13 - lIdx * 14, size: 10.5, font: fontRegular, color: rgb(...tpl.pdfText) });
+            });
+
+            const amtStr = formatMoney(it.amount);
+            const amtW = fontBold.widthOfTextAtSize(amtStr, 10.5);
+            page.drawText(amtStr, { x: pageW - margin - 10 - amtW, y: y - 13, size: 10.5, font: fontBold, color: rgb(...tpl.pdfText) });
+
+            y -= rowH;
+          });
+
+          if (y < 95) {
+            page = newStyledPage();
+            y = pageH - 52;
+          }
+          y -= 10;
+          page.drawLine({ start: { x: margin, y }, end: { x: pageW - margin, y }, thickness: 1.5, color: rgb(...tpl.pdfAccent) });
+          y -= 24;
+
+          const totalStr = 'TOTAL: ' + formatMoney(getTotal());
+          const totalW = fontBold.widthOfTextAtSize(totalStr, 14);
+          page.drawText(totalStr, { x: pageW - margin - totalW, y, size: 14, font: fontBold, color: rgb(...tpl.pdfAccent) });
+
+          const footerStr = safePdfText(bizContactEl.value.trim());
+          if (footerStr) {
+            page.drawText(footerStr, { x: margin, y: 28, size: 9.5, font: fontRegular, color: rgb(...tpl.pdfMuted) });
+          }
+
+          const pdfBytes = await pdfDoc.save();
+          const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const slug = (bizNameEl.value.trim() || 'cotizacion')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+          a.href = url;
+          a.download = 'cotizacion-' + (slug || 'documento') + '.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+          pdfStatusEl.textContent = 'Listo: PDF de cotización descargado.';
+        } catch (err) {
+          pdfStatusEl.textContent = 'Error: ' + err.message;
+        } finally {
+          generatePdfBtn.disabled = false;
+        }
+      });
+
+      renderItemsEditor();
+      updatePreview();
+
+      // ==========================================
+      // 2. GENERADOR DE ENLACE WHATSAPP
+      // ==========================================
+      const waCodeEl = document.getElementById('wa-code');
+      const waPhoneEl = document.getElementById('wa-phone');
+      const waMsgEl = document.getElementById('wa-msg');
+      const waOutputEl = document.getElementById('wa-output');
+      const waCopyBtn = document.getElementById('wa-copy-btn');
+      const waOpenLink = document.getElementById('wa-open-link');
+      const waStatusEl = document.getElementById('wa-status');
+
+      function updateWaLink() {
+        const code = waCodeEl.value.replace(/\D/g, '');
+        const phone = waPhoneEl.value.replace(/\D/g, '');
+        const fullNum = code + phone;
+        const msg = waMsgEl.value.trim();
+
+        let url = 'https://wa.me/' + fullNum;
+        if (msg) {
+          url += '?text=' + encodeURIComponent(msg);
+        }
+        waOutputEl.value = url;
+        waOpenLink.href = url;
+      }
+
+      [waCodeEl, waPhoneEl, waMsgEl].forEach((el) => el.addEventListener('input', updateWaLink));
+
+      document.querySelectorAll('[data-wa-preset]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          waMsgEl.value = btn.getAttribute('data-wa-preset');
+          updateWaLink();
+        });
+      });
+
+      waCopyBtn.addEventListener('click', () => {
+        copyText(waOutputEl.value, waStatusEl);
+      });
+
+      updateWaLink();
+
+      // ==========================================
+      // 3. LIMPIADOR / FORMATEADOR DE TEXTO
+      // ==========================================
+      const txtInputEl = document.getElementById('txt-input');
+      const txtOutputEl = document.getElementById('txt-output');
+      const txtCountersEl = document.getElementById('txt-counters');
+      const txtCopyBtn = document.getElementById('txt-copy-btn');
+      const txtUseBtn = document.getElementById('txt-use-btn');
+      const txtClearBtn = document.getElementById('txt-clear-btn');
+      const txtStatusEl = document.getElementById('txt-status');
+
+      function updateTextStats(str) {
+        const chars = str.length;
+        const words = str.trim() ? str.trim().split(/\s+/).length : 0;
+        const lines = str ? str.split(/\r?\n/).length : 0;
+        txtCountersEl.textContent = chars + ' caracteres · ' + words + ' palabras · ' + lines + ' líneas';
+      }
+
+      txtInputEl.addEventListener('input', () => {
+        txtOutputEl.value = txtInputEl.value;
+        updateTextStats(txtOutputEl.value);
+      });
+
+      document.querySelectorAll('[data-txt-op]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const op = btn.getAttribute('data-txt-op');
+          let val = txtInputEl.value;
+
+          if (op === 'spaces') {
+            val = val
+              .split(/\r?\n/)
+              .map((l) => l.replace(/[ \t]+/g, ' ').trim())
+              .join('\n')
+              .replace(/\n{3,}/g, '\n\n')
+              .trim();
+          } else if (op === 'lines') {
+            val = val.replace(/\r?\n+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+          } else if (op === 'dedupe') {
+            const seen = new Set();
+            val = val
+              .split(/\r?\n/)
+              .filter((line) => {
+                const k = line.trim();
+                if (!k) return false;
+                if (seen.has(k)) return false;
+                seen.add(k);
+                return true;
+              })
+              .join('\n');
+          } else if (op === 'upper') {
+            val = val.toUpperCase();
+          } else if (op === 'lower') {
+            val = val.toLowerCase();
+          } else if (op === 'title') {
+            val = val.toLowerCase().replace(/(^|\s)\S/g, (ch) => ch.toUpperCase());
+          } else if (op === 'extract') {
+            const matches = val.match(/(https?:\/\/[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g) || [];
+            val = Array.from(new Set(matches)).join('\n');
+          }
+
+          txtOutputEl.value = val;
+          updateTextStats(val);
+          txtStatusEl.textContent = '';
+        });
+      });
+
+      txtCopyBtn.addEventListener('click', () => {
+        copyText(txtOutputEl.value, txtStatusEl);
+      });
+
+      txtUseBtn.addEventListener('click', () => {
+        txtInputEl.value = txtOutputEl.value;
+        txtStatusEl.textContent = 'Texto pasado al editor.';
+      });
+
+      txtClearBtn.addEventListener('click', () => {
+        txtInputEl.value = '';
+        txtOutputEl.value = '';
+        updateTextStats('');
+        txtStatusEl.textContent = '';
+      });
+
+      // ==========================================
+      // 4. CALCULADORA DE PRECIO / MARGEN / GANANCIA
+      // ==========================================
+      const calcCostEl = document.getElementById('calc-cost');
+      const calcModeEl = document.getElementById('calc-mode');
+      const calcPctEl = document.getElementById('calc-pct');
+      const calcFeeEl = document.getElementById('calc-fee');
+      const calcTaxEl = document.getElementById('calc-tax');
+      const resSubtotalEl = document.getElementById('res-subtotal');
+      const resFinalEl = document.getElementById('res-final');
+      const resProfitEl = document.getElementById('res-profit');
+      const resMarginEl = document.getElementById('res-margin');
+      const calcCopyBtn = document.getElementById('calc-copy-btn');
+      const calcStatusEl = document.getElementById('calc-status');
+
+      let lastCalcSummary = '';
+
+      function updateCalc() {
+        const baseCost = Math.max(0, Number(calcCostEl.value) || 0);
+        const extraFee = Math.max(0, Number(calcFeeEl.value) || 0);
+        const totalCost = baseCost + extraFee;
+        const pct = Math.max(0, Number(calcPctEl.value) || 0);
+        const taxPct = Math.max(0, Number(calcTaxEl.value) || 0);
+
+        let subtotal = 0;
+        if (calcModeEl.value === 'markup') {
+          subtotal = totalCost * (1 + pct / 100);
+        } else {
+          const safePct = Math.min(pct, 99.9);
+          subtotal = totalCost / (1 - safePct / 100);
+        }
+
+        const finalPrice = subtotal * (1 + taxPct / 100);
+        const profit = subtotal - totalCost;
+        const realMargin = subtotal > 0 ? (profit / subtotal) * 100 : 0;
+
+        resSubtotalEl.textContent = formatMoney(subtotal);
+        resFinalEl.textContent = formatMoney(finalPrice);
+        resProfitEl.textContent = formatMoney(profit);
+        resMarginEl.textContent = realMargin.toFixed(1) + '%';
+
+        lastCalcSummary =
+          'Costo total: ' + formatMoney(totalCost) +
+          ' | Precio antes de IVA: ' + formatMoney(subtotal) +
+          ' | Precio final: ' + formatMoney(finalPrice) +
+          ' | Ganancia: ' + formatMoney(profit) +
+          ' (' + realMargin.toFixed(1) + '%)';
+      }
+
+      [calcCostEl, calcModeEl, calcPctEl, calcFeeEl, calcTaxEl].forEach((el) => {
+        el.addEventListener('input', updateCalc);
+        el.addEventListener('change', updateCalc);
+      });
+
+      calcCopyBtn.addEventListener('click', () => {
+        copyText(lastCalcSummary, calcStatusEl);
+      });
+
+      updateCalc();
+    })();
+  </script>
+</body>
+</html>
