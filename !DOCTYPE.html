@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suite Local Zero-Upload</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #0b1220;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --border: #334155;
+      --danger: #f87171;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      background: var(--panel-2);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: 0.2px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tab-btn {
+      background: var(--panel);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #06202a;
+      border-color: var(--accent);
+    }
+
+    main {
+      max-width: 1020px;
+      margin: 1.5rem auto;
+      padding: 0 1rem 3rem;
+    }
+
+    .tool-panel {
+      display: none;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+
+    .tool-panel.active {
+      display: block;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .box {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      margin-top: 0.75rem;
+    }
+
+    label:first-child { margin-top: 0; }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="color"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    input[type="color"] {
+      height: 40px;
+      padding: 0.2rem;
+      cursor: pointer;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .btn {
+      margin-top: 1rem;
+      background: var(--accent);
+      color: #06202a;
+      border: none;
+      padding: 0.65rem 1.1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.92rem;
+    }
+
+    .btn:hover { filter: brightness(1.08); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+    }
+
+    .btn-green {
+      background: var(--accent-2);
+      color: #052e16;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .file-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.75rem 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .mini-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.2rem 0.45rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .mini-btn.del {
+      border-color: rgba(248, 113, 113, 0.4);
+      color: var(--danger);
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: block;
+    }
+
+    .status {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+
+    .hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Suite Local</h1>
+      <span class="badge">100% en tu navegador · Sin subir archivos</span>
+    </div>
+    <nav aria-label="Herramientas">
+      <button class="tab-btn active" data-tab="pdf">1. PDF y Evidencias</button>
+      <button class="tab-btn" data-tab="card">2. Ficha / Tarjeta + QR</button>
+      <button class="tab-btn" data-tab="sfx">3. Audio SFX 8-Bit</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- MÓDULO 1: PDF Y EVIDENCIAS -->
+    <section id="tab-pdf" class="tool-panel active">
+      <h2>Armador y Unificador de PDF + Evidencias</h2>
+      <p class="hint">Combina archivos PDF e imágenes (JPG/PNG), ordénalos y agrega un pie de página o marca discreta sin enviar nada a un servidor.</p>
+
+      <div class="grid-2">
+        <div class="box">
+          <label for="pdf-files">Selecciona PDFs o fotos (JPG, PNG)</label>
+          <input id="pdf-files" type="file" accept="application/pdf,image/png,image/jpeg" multiple />
+
+          <ul id="pdf-queue" class="file-list"></ul>
+
+          <label for="pdf-watermark">Texto al pie / marca (opcional)</label>
+          <input id="pdf-watermark" type="text" placeholder="Ej. ANEXO · COPIA DE CONTROL" />
+
+          <div class="row">
+            <button id="pdf-merge-btn" class="btn btn-green" disabled>Generar PDF combinado</button>
+            <button id="pdf-clear-btn" class="btn btn-secondary" type="button">Limpiar lista</button>
+          </div>
+          <div id="pdf-status" class="status"></div>
+        </div>
+
+        <div class="box">
+          <strong>Notas prácticas</strong>
+          <p class="hint">• Cada imagen se agrega como una página ajustada al tamaño de hoja.</p>
+          <p class="hint">• La librería <code>pdf-lib</code> se carga solo cuando usas esta pestaña.</p>
+          <p class="hint">• PDFs protegidos con contraseña o firmas digitales pueden rechazar modificaciones.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- MÓDULO 2: FICHA / TARJETA + QR -->
+    <section id="tab-card" class="tool-panel">
+      <h2>Generador Rápido de Ficha / Tarjeta con QR</h2>
+      <p class="hint">Crea una tarjeta o ficha visual al instante y descárgala como PNG.</p>
+
+      <div class="grid-2">
+        <div class="box">
+          <label for="card-title">Título / Negocio</label>
+          <input id="card-title" type="text" value="Servicio Express" />
+
+          <label for="card-subtitle">Subtítulo / Especialidad</label>
+          <input id="card-subtitle" type="text" value="Diagnóstico y atención rápida" />
+
+          <label for="card-details">Datos / Horario / Contacto</label>
+          <textarea id="card-details" rows="3">Lun a Vie 9:00 - 18:00 · Cotizaciones sin compromiso</textarea>
+
+          <label for="card-qr">Texto o enlace para el QR</label>
+          <input id="card-qr" type="text" value="https://ejemplo.com" />
+
+          <div class="row">
+            <div style="flex:1">
+              <label for="card-color">Color principal</label>
+              <input id="card-color" type="color" value="#0f172a" />
+            </div>
+            <div style="flex:1">
+              <label for="card-accent">Color de acento</label>
+              <input id="card-accent" type="color" value="#0284c7" />
+            </div>
+          </div>
+
+          <button id="card-download-btn" class="btn btn-green">Descargar PNG</button>
+          <div id="card-status" class="status"></div>
+        </div>
+
+        <div class="box">
+          <canvas id="card-canvas" width="800" height="450"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- MÓDULO 3: AUDIO SFX 8-BIT -->
+    <section id="tab-sfx" class="tool-panel">
+      <h2>Sintetizador de Efectos 8-Bit (Web Audio)</h2>
+      <p class="hint">Genera sonidos retro en el navegador y descárgalos en formato WAV sin depender de librerías externas.</p>
+
+      <div class="grid-2">
+        <div class="box">
+          <label for="sfx-preset">Preset rápido</label>
+          <select id="sfx-preset">
+            <option value="coin">Moneda / Aviso</option>
+            <option value="laser">Láser / Pulso</option>
+            <option value="jump">Salto / Ascenso</option>
+            <option value="explosion">Ruido / Impacto</option>
+          </select>
+
+          <label for="sfx-wave">Forma de onda</label>
+          <select id="sfx-wave">
+            <option value="square">Square (8-bit clásico)</option>
+            <option value="sawtooth">Sawtooth</option>
+            <option value="triangle">Triangle</option>
+            <option value="sine">Sine</option>
+          </select>
+
+          <label for="sfx-start-freq">Frecuencia inicial (Hz)</label>
+          <input id="sfx-start-freq" type="number" min="60" max="3000" value="520" />
+
+          <label for="sfx-end-freq">Frecuencia final (Hz)</label>
+          <input id="sfx-end-freq" type="number" min="40" max="3000" value="1040" />
+
+          <label for="sfx-duration">Duración (segundos)</label>
+          <input id="sfx-duration" type="number" step="0.05" min="0.05" max="2" value="0.25" />
+
+          <div class="row">
+            <button id="sfx-play-btn" class="btn">Reproducir</button>
+            <button id="sfx-wav-btn" class="btn btn-green">Descargar .WAV</button>
+          </div>
+          <div id="sfx-status" class="status"></div>
+        </div>
+
+        <div class="box">
+          <strong>Cómo funciona</strong>
+          <p class="hint">• Usa la <code>Web Audio API</code> del navegador para sintetizar y renderizar el audio offline.</p>
+          <p class="hint">• Exporta un archivo <code>.wav</code> PCM de 16 bits listo para editar o usar en prototipos.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --- NAVEGACIÓN ENTRE PESTAÑAS ---
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tool-panel');
+
+    tabs.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        tabs.forEach((b) => b.classList.toggle('active', b === btn));
+        panels.forEach((p) => p.classList.toggle('active', p.id === `tab-${target}`));
+        if (target === 'card') renderCard();
+      });
+    });
+
+    // --- CARGADOR BAJO DEMANDA DE SCRIPTS ---
+    const loadedScripts = new Map();
+    function loadScriptOnce(src) {
+      if (loadedScripts.has(src)) return loadedScripts.get(src);
+      const promise = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+        document.head.appendChild(s);
+      });
+      loadedScripts.set(src, promise);
+      return promise;
+    }
+
+    function triggerDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    // --- MÓDULO 1: PDF + EVIDENCIAS ---
+    const pdfInput = document.getElementById('pdf-files');
+    const pdfQueueEl = document.getElementById('pdf-queue');
+    const pdfMergeBtn = document.getElementById('pdf-merge-btn');
+    const pdfClearBtn = document.getElementById('pdf-clear-btn');
+    const pdfWatermark = document.getElementById('pdf-watermark');
+    const pdfStatus = document.getElementById('pdf-status');
+
+    let pdfItems = [];
+
+    function renderPdfQueue() {
+      pdfQueueEl.innerHTML = '';
+      pdfItems.forEach((file, idx) => {
+        const li = document.createElement('li');
+        li.className = 'file-item';
+        li.innerHTML = `
+          <span>${idx + 1}. ${file.name}</span>
+          <span class="row" style="gap:0.25rem">
+            <button class="mini-btn" data-move="-1" data-idx="${idx}" ${idx === 0 ? 'disabled' : ''}>↑</button>
+            <button class="mini-btn" data-move="1" data-idx="${idx}" ${idx === pdfItems.length - 1 ? 'disabled' : ''}>↓</button>
+            <button class="mini-btn del" data-del="${idx}">✕</button>
+          </span>
+        `;
+        pdfQueueEl.appendChild(li);
+      });
+      pdfMergeBtn.disabled = pdfItems.length === 0;
+    }
+
+    pdfInput.addEventListener('change', (e) => {
+      if (e.target.files?.length) {
+        pdfItems.push(...Array.from(e.target.files));
+        renderPdfQueue();
+        pdfStatus.textContent = '';
+        pdfInput.value = '';
+      }
+    });
+
+    pdfQueueEl.addEventListener('click', (e) => {
+      const idx = Number(e.target.dataset.idx);
+      if (e.target.dataset.move) {
+        const delta = Number(e.target.dataset.move);
+        const swap = idx + delta;
+        [pdfItems[idx], pdfItems[swap]] = [pdfItems[swap], pdfItems[idx]];
+        renderPdfQueue();
+      } else if (e.target.dataset.del !== undefined) {
+        const delIdx = Number(e.target.dataset.del);
+        pdfItems.splice(delIdx, 1);
+        renderPdfQueue();
+      }
+    });
+
+    pdfClearBtn.addEventListener('click', () => {
+      pdfItems = [];
+      renderPdfQueue();
+      pdfStatus.textContent = '';
+    });
+
+    pdfMergeBtn.addEventListener('click', async () => {
+      pdfMergeBtn.disabled = true;
+      pdfStatus.textContent = 'Cargando motor PDF...';
+      try {
+        await loadScriptOnce('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js');
+        const { PDFDocument, rgb, StandardFonts } = window.PDFLib;
+        const outPdf = await PDFDocument.create();
+        const font = await outPdf.embedFont(StandardFonts.HelveticaBold);
+
+        for (const file of pdfItems) {
+          pdfStatus.textContent = `Procesando ${file.name}...`;
+          const bytes = await file.arrayBuffer();
+
+          if (file.type === 'application/pdf') {
+            const srcPdf = await PDFDocument.load(bytes);
+            const copied = await outPdf.copyPages(srcPdf, srcPdf.getPageIndices());
+            copied.forEach((p) => outPdf.addPage(p));
+          } else if (file.type === 'image/png' || file.type === 'image/jpeg') {
+            const img = file.type === 'image/png'
+              ? await outPdf.embedPng(bytes)
+              : await outPdf.embedJpg(bytes);
+            const page = outPdf.addPage([612, 792]); // Carta aprox en puntos
+            const margin = 36;
+            const maxW = page.getWidth() - margin * 2;
+            const maxH = page.getHeight() - margin * 2;
+            const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+            const w = img.width * scale;
+            const h = img.height * scale;
+            page.drawImage(img, {
+              x: (page.getWidth() - w) / 2,
+              y: (page.getHeight() - h) / 2,
+              width: w,
+              height: h
+            });
+          }
+        }
+
+        const note = pdfWatermark.value.trim();
+        if (note) {
+          outPdf.getPages().forEach((page, i) => {
+            page.drawText(`${note}  |  Pág. ${i + 1}`, {
+              x: 36,
+              y: 18,
+              size: 9,
+              font,
+              color: rgb(0.4, 0.45, 0.55)
+            });
+          });
+        }
+
+        const mergedBytes = await outPdf.save();
+        triggerDownload(new Blob([mergedBytes], { type: 'application/pdf' }), 'documento-combinado.pdf');
+        pdfStatus.textContent = 'Listo: PDF descargado.';
+      } catch (err) {
+        pdfStatus.textContent = `Error: ${err.message}`;
+      } finally {
+        pdfMergeBtn.disabled = pdfItems.length === 0;
+      }
+    });
+
+    // --- MÓDULO 2: FICHA / TARJETA + QR ---
+    const cardCanvas = document.getElementById('card-canvas');
+    const cardCtx = cardCanvas.getContext('2d');
+    const cardTitle = document.getElementById('card-title');
+    const cardSubtitle = document.getElementById('card-subtitle');
+    const cardDetails = document.getElementById('card-details');
+    const cardQr = document.getElementById('card-qr');
+    const cardColor = document.getElementById('card-color');
+    const cardAccent = document.getElementById('card-accent');
+    const cardDownloadBtn = document.getElementById('card-download-btn');
+    const cardStatus = document.getElementById('card-status');
+
+    let qrDrawSeq = 0;
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(/\s+/);
+      let line = '';
+      let curY = y;
+      for (const word of words) {
+        const test = line ? `${line} ${word}` : word;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          ctx.fillText(line, x, curY);
+          line = word;
+          curY += lineHeight;
+        } else {
+          line = test;
+        }
+      }
+      if (line) ctx.fillText(line, x, curY);
+      return curY;
+    }
+
+    async function renderCard() {
+      const seq = ++qrDrawSeq;
+      const w = cardCanvas.width;
+      const h = cardCanvas.height;
+
+      cardCtx.clearRect(0, 0, w, h);
+      cardCtx.fillStyle = '#ffffff';
+      cardCtx.fillRect(0, 0, w, h);
+
+      // Franja lateral
+      cardCtx.fillStyle = cardColor.value;
+      cardCtx.fillRect(0, 0, 26, h);
+
+      cardCtx.fillStyle = cardAccent.value;
+      cardCtx.fillRect(26, 0, 8, h);
+
+      // Textos
+      cardCtx.fillStyle = cardColor.value;
+      cardCtx.font = 'bold 34px system-ui, sans-serif';
+      const afterTitle = wrapText(cardCtx, cardTitle.value || 'Título', 64, 82, 460, 42);
+
+      cardCtx.fillStyle = cardAccent.value;
+      cardCtx.font = '600 20px system-ui, sans-serif';
+      const afterSub = wrapText(cardCtx, cardSubtitle.value || '', 64, afterTitle + 34, 460, 28);
+
+      cardCtx.fillStyle = '#334155';
+      cardCtx.font = '400 18px system-ui, sans-serif';
+      wrapText(cardCtx, cardDetails.value || '', 64, afterSub + 42, 460, 26);
+
+      // QR
+      const qrText = (cardQr.value || 'https://ejemplo.com').trim();
+      try {
+        await loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js');
+        if (seq !== qrDrawSeq) return;
+        const qrTmp = document.createElement('canvas');
+        await window.QRCode.toCanvas(qrTmp, qrText, { width: 190, margin: 1 });
+        if (seq !== qrDrawSeq) return;
+        cardCtx.drawImage(qrTmp, w - 235, h / 2 - 95, 190, 190);
+      } catch (_) {
+        if (seq !== qrDrawSeq) return;
+        cardCtx.strokeStyle = '#94a3b8';
+        cardCtx.strokeRect(w - 235, h / 2 - 95, 190, 190);
+        cardCtx.fillStyle = '#64748b';
+        cardCtx.font = '14px system-ui, sans-serif';
+        cardCtx.fillText('QR sin conexión', w - 185, h / 2);
+      }
+    }
+
+    [cardTitle, cardSubtitle, cardDetails, cardQr, cardColor, cardAccent].forEach((el) => {
+      el.addEventListener('input', renderCard);
+    });
+
+    cardDownloadBtn.addEventListener('click', () => {
+      cardCanvas.toBlob((blob) => {
+        if (blob) {
+          triggerDownload(blob, 'ficha-tarjeta.png');
+          cardStatus.textContent = 'PNG
