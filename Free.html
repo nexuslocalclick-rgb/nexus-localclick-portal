@@ -3,806 +3,469 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Suite Local Zero-Upload</title>
+  <title>Ficha + QR Offline</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --panel: #1e293b;
-      --panel-2: #0b1220;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-2: #22c55e;
-      --border: #334155;
-      --danger: #f87171;
-    }
-
-    * { box-sizing: border-box; }
-
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 1rem;
     }
-
-    header {
-      background: var(--panel-2);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 1.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem 1.5rem;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .brand h1 {
-      margin: 0;
-      font-size: 1.15rem;
-    }
-
-    .badge {
-      font-size: 0.75rem;
-      padding: 0.2rem 0.55rem;
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.15);
-      color: #86efac;
-      border: 1px solid rgba(34, 197, 94, 0.35);
-    }
-
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .tab-btn {
-      background: var(--panel);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 0.55rem 0.95rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      touch-action: manipulation;
-    }
-
-    .tab-btn:hover {
-      border-color: var(--accent);
-    }
-
-    .tab-btn.active {
-      background: var(--accent);
-      color: #06202a;
-      border-color: var(--accent);
-    }
-
-    main {
-      max-width: 1020px;
-      margin: 1.5rem auto;
-      padding: 0 1rem 3rem;
-    }
-
-    .tool-panel {
-      display: none;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.5rem;
-    }
-
-    .tool-panel.active {
-      display: block;
-    }
-
-    .grid-2 {
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
       gap: 1.25rem;
-      margin-top: 1rem;
     }
-
     .box {
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
       padding: 1rem;
     }
-
     label {
       display: block;
       font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 0.35rem;
-      margin-top: 0.75rem;
+      color: #94a3b8;
+      margin-top: 0.7rem;
+      margin-bottom: 0.3rem;
     }
-
     label:first-child { margin-top: 0; }
-
-    input[type="text"],
-    input[type="number"],
-    input[type="color"],
-    select,
-    textarea {
+    input, textarea {
       width: 100%;
+      box-sizing: border-box;
       padding: 0.55rem 0.7rem;
       border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--panel);
-      color: var(--text);
+      border: 1px solid #334155;
+      background: #0b1220;
+      color: #f8fafc;
       font-size: 0.95rem;
     }
-
     input[type="color"] {
       height: 40px;
       padding: 0.2rem;
       cursor: pointer;
     }
-
-    input[type="file"] {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      background: var(--panel);
-      color: var(--muted);
-      font-size: 0.85rem;
+    .row {
+      display: flex;
+      gap: 0.6rem;
     }
-
-    .btn {
+    .row > div { flex: 1; }
+    button {
       margin-top: 1rem;
-      background: var(--accent);
-      color: #06202a;
+      background: #22c55e;
+      color: #052e16;
       border: none;
       padding: 0.65rem 1.1rem;
       border-radius: 8px;
       font-weight: 700;
       cursor: pointer;
-      font-size: 0.92rem;
-      touch-action: manipulation;
+      font-size: 0.95rem;
     }
-
-    .btn:hover { filter: brightness(1.08); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .btn-secondary {
-      background: #334155;
-      color: var(--text);
-    }
-
-    .btn-green {
-      background: var(--accent-2);
-      color: #052e16;
-    }
-
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      align-items: center;
-    }
-
-    .file-list {
-      list-style: none;
-      padding: 0;
-      margin: 0.75rem 0 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-    }
-
-    .file-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      padding: 0.45rem 0.7rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-    }
-
-    .mini-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 6px;
-      padding: 0.2rem 0.45rem;
-      cursor: pointer;
-      font-size: 0.8rem;
-    }
-
-    .mini-btn.del {
-      border-color: rgba(248, 113, 113, 0.4);
-      color: var(--danger);
-    }
-
     canvas {
-      max-width: 100%;
+      width: 100%;
       height: auto;
       border-radius: 10px;
-      border: 1px solid var(--border);
       background: #ffffff;
       display: block;
     }
-
     .status {
-      margin-top: 0.75rem;
+      margin-top: 0.6rem;
       font-size: 0.85rem;
-      color: var(--muted);
+      color: #94a3b8;
       min-height: 1.2em;
-    }
-
-    .hint {
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-top: 0.35rem;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <h1>Suite Local</h1>
-      <span class="badge">100% en tu navegador · Sin subir archivos</span>
+  <div class="wrap">
+    <div class="box">
+      <label for="card-title">Título / Negocio</label>
+      <input id="card-title" type="text" value="Generador de paginas web" />
+
+      <label for="card-subtitle">Subtítulo / Especialidad</label>
+      <input id="card-subtitle" type="text" value="Diagnóstico y atención rápida" />
+
+      <label for="card-details">Datos / Horario / Contacto</label>
+      <textarea id="card-details" rows="3">Lun a Vie 9:00 - 18:00 · Cotizaciones sin compromiso</textarea>
+
+      <label for="card-qr">Texto o enlace para el QR</label>
+      <input id="card-qr" type="text" value="https://localclick.com.mx" />
+
+      <div class="row">
+        <div>
+          <label for="card-color">Color principal</label>
+          <input id="card-color" type="color" value="#0f172a" />
+        </div>
+        <div>
+          <label for="card-accent">Color de acento</label>
+          <input id="card-accent" type="color" value="#0284c7" />
+        </div>
+      </div>
+
+      <button type="button" id="card-download-btn">Descargar PNG</button>
+      <div id="card-status" class="status"></div>
     </div>
-    <nav id="tabs-nav" aria-label="Herramientas">
-      <button type="button" id="btn-tab-pdf" class="tab-btn active" data-tab="pdf" onclick="window.abrirPestana('pdf')">1. PDF y Evidencias</button>
-      <button type="button" id="btn-tab-card" class="tab-btn" data-tab="card" onclick="window.abrirPestana('card')">2. Ficha / Tarjeta + QR</button>
-      <button type="button" id="btn-tab-sfx" class="tab-btn" data-tab="sfx" onclick="window.abrirPestana('sfx')">3. Audio SFX 8-Bit</button>
-    </nav>
-  </header>
 
-  <main>
-    <!-- MÓDULO 1: PDF Y EVIDENCIAS -->
-    <section id="tab-pdf" class="tool-panel active">
-      <h2>Armador y Unificador de PDF + Evidencias</h2>
-      <p class="hint">Combina archivos PDF e imágenes (JPG/PNG), ordénalos y agrega un pie de página o marca discreta sin enviar nada a un servidor.</p>
-
-      <div class="grid-2">
-        <div class="box">
-          <label for="pdf-files">Selecciona PDFs o fotos (JPG, PNG)</label>
-          <input id="pdf-files" type="file" accept="application/pdf,image/png,image/jpeg" multiple />
-
-          <ul id="pdf-queue" class="file-list"></ul>
-
-          <label for="pdf-watermark">Texto al pie / marca (opcional)</label>
-          <input id="pdf-watermark" type="text" placeholder="Ej. ANEXO · COPIA DE CONTROL" />
-
-          <div class="row">
-            <button type="button" id="pdf-merge-btn" class="btn btn-green" disabled>Generar PDF combinado</button>
-            <button type="button" id="pdf-clear-btn" class="btn btn-secondary">Limpiar lista</button>
-          </div>
-          <div id="pdf-status" class="status"></div>
-        </div>
-
-        <div class="box">
-          <strong>Notas prácticas</strong>
-          <p class="hint">• Cada imagen se agrega como una página ajustada al tamaño de hoja.</p>
-          <p class="hint">• La librería <code>pdf-lib</code> se carga solo cuando usas esta pestaña.</p>
-          <p class="hint">• PDFs protegidos con contraseña o firmas digitales pueden rechazar modificaciones.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- MÓDULO 2: FICHA / TARJETA + QR -->
-    <section id="tab-card" class="tool-panel" hidden style="display:none;">
-      <h2>Generador Rápido de Ficha / Tarjeta con QR</h2>
-      <p class="hint">Crea una tarjeta o ficha visual al instante y descárgala como PNG.</p>
-
-      <div class="grid-2">
-        <div class="box">
-          <label for="card-title">Título / Negocio</label>
-          <input id="card-title" type="text" value="Servicio Express" />
-
-          <label for="card-subtitle">Subtítulo / Especialidad</label>
-          <input id="card-subtitle" type="text" value="Diagnóstico y atención rápida" />
-
-          <label for="card-details">Datos / Horario / Contacto</label>
-          <textarea id="card-details" rows="3">Lun a Vie 9:00 - 18:00 · Cotizaciones sin compromiso</textarea>
-
-          <label for="card-qr">Texto o enlace para el QR</label>
-          <input id="card-qr" type="text" value="https://ejemplo.com" />
-
-          <div class="row">
-            <div style="flex:1">
-              <label for="card-color">Color principal</label>
-              <input id="card-color" type="color" value="#0f172a" />
-            </div>
-            <div style="flex:1">
-              <label for="card-accent">Color de acento</label>
-              <input id="card-accent" type="color" value="#0284c7" />
-            </div>
-          </div>
-
-          <button type="button" id="card-download-btn" class="btn btn-green">Descargar PNG</button>
-          <div id="card-status" class="status"></div>
-        </div>
-
-        <div class="box">
-          <canvas id="card-canvas" width="800" height="450"></canvas>
-        </div>
-      </div>
-    </section>
-
-    <!-- MÓDULO 3: AUDIO SFX 8-BIT -->
-    <section id="tab-sfx" class="tool-panel" hidden style="display:none;">
-      <h2>Sintetizador de Efectos 8-Bit (Web Audio)</h2>
-      <p class="hint">Genera sonidos retro en el navegador y descárgalos en formato WAV sin depender de librerías externas.</p>
-
-      <div class="grid-2">
-        <div class="box">
-          <label for="sfx-preset">Preset rápido</label>
-          <select id="sfx-preset">
-            <option value="coin">Moneda / Aviso</option>
-            <option value="laser">Láser / Pulso</option>
-            <option value="jump">Salto / Ascenso</option>
-            <option value="explosion">Ruido / Impacto</option>
-          </select>
-
-          <label for="sfx-wave">Forma de onda</label>
-          <select id="sfx-wave">
-            <option value="square">Square (8-bit clásico)</option>
-            <option value="sawtooth">Sawtooth</option>
-            <option value="triangle">Triangle</option>
-            <option value="sine">Sine</option>
-          </select>
-
-          <label for="sfx-start-freq">Frecuencia inicial (Hz)</label>
-          <input id="sfx-start-freq" type="number" min="60" max="3000" value="980" />
-
-          <label for="sfx-end-freq">Frecuencia final (Hz)</label>
-          <input id="sfx-end-freq" type="number" min="40" max="3000" value="1480" />
-
-          <label for="sfx-duration">Duración (segundos)</label>
-          <input id="sfx-duration" type="number" step="0.05" min="0.05" max="2" value="0.16" />
-
-          <div class="row">
-            <button type="button" id="sfx-play-btn" class="btn">Reproducir</button>
-            <button type="button" id="sfx-wav-btn" class="btn btn-green">Descargar .WAV</button>
-          </div>
-          <div id="sfx-status" class="status"></div>
-        </div>
-
-        <div class="box">
-          <strong>Cómo funciona</strong>
-          <p class="hint">• Usa la <code>Web Audio API</code> del navegador para sintetizar y renderizar el audio offline.</p>
-          <p class="hint">• Exporta un archivo <code>.wav</code> PCM de 16 bits listo para editar o usar en prototipos.</p>
-        </div>
-      </div>
-    </section>
-  </main>
+    <div class="box">
+      <canvas id="card-canvas" width="800" height="450"></canvas>
+    </div>
+  </div>
 
   <script>
-    (function () {
-      const validTabs = ['pdf', 'card', 'sfx'];
+    // Generador QR compacto en Byte Mode (versión 1 a 6, ECC L) 100% local sin dependencias
+    const QR_LOCAL = (function () {
+      const EXP = new Uint8Array(256);
+      const LOG = new Uint8Array(256);
+      let x = 1;
+      for (let i = 0; i < 255; i++) {
+        EXP[i] = x;
+        LOG[x] = i;
+        x <<= 1;
+        if (x & 0x100) x ^= 0x11d;
+      }
+      for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
 
-      window.abrirPestana = function (target) {
-        if (!validTabs.includes(target)) return;
-
-        validTabs.forEach((name) => {
-          const btn = document.getElementById('btn-tab-' + name);
-          const panel = document.getElementById('tab-' + name);
-          const isSelected = name === target;
-
-          if (btn) {
-            btn.classList.toggle('active', isSelected);
-            btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-          }
-          if (panel) {
-            panel.classList.toggle('active', isSelected);
-            panel.hidden = !isSelected;
-            panel.style.display = isSelected ? 'block' : 'none';
-          }
-        });
-
-        if (target === 'card' && typeof window.renderCard === 'function') {
-          window.renderCard();
-        }
-      };
-
-      // --- CARGADOR BAJO DEMANDA DE SCRIPTS ---
-      const loadedScripts = new Map();
-      function loadScriptOnce(src) {
-        if (loadedScripts.has(src)) return loadedScripts.get(src);
-        const promise = new Promise((resolve, reject) => {
-          const s = document.createElement('script');
-          s.src = src;
-          s.async = true;
-          s.onload = () => resolve();
-          s.onerror = () => reject(new Error('No se pudo cargar ' + src));
-          document.head.appendChild(s);
-        });
-        loadedScripts.set(src, promise);
-        return promise;
+      function gfMul(a, b) {
+        if (a === 0 || b === 0) return 0;
+        return EXP[LOG[a] + LOG[b]];
       }
 
-      function triggerDownload(blob, filename) {
+      function rsPoly(ecLen) {
+        let poly = [1];
+        for (let i = 0; i < ecLen; i++) {
+          const next = new Array(poly.length + 1).fill(0);
+          const factor = EXP[i];
+          for (let j = 0; j < poly.length; j++) {
+            next[j] ^= poly[j];
+            next[j + 1] ^= gfMul(poly[j], factor);
+          }
+          poly = next;
+        }
+        return poly.slice(1);
+      }
+
+      function rsEncode(data, ecLen) {
+        const gen = rsPoly(ecLen);
+        const ecc = new Array(ecLen).fill(0);
+        for (let i = 0; i < data.length; i++) {
+          const lead = data[i] ^ ecc[0];
+          for (let j = 0; j < ecLen - 1; j++) {
+            ecc[j] = ecc[j + 1] ^ gfMul(lead, gen[j]);
+          }
+          ecc[ecLen - 1] = gfMul(lead, gen[ecLen - 1]);
+        }
+        return ecc;
+      }
+
+      // [version, totalDataCodewords, ecCodewordsPerBlock, blocks]
+      const SPECS = [
+        [1, 19, 7, 1],
+        [2, 34, 10, 1],
+        [3, 55, 15, 1],
+        [4, 80, 20, 1],
+        [5, 108, 26, 1],
+        [6, 136, 18, 2]
+      ];
+
+      function chooseSpec(byteLen) {
+        for (const spec of SPECS) {
+          const ccBits = spec[0] < 10 ? 8 : 16;
+          const capBytes = Math.floor((spec[1] * 8 - 4 - ccBits) / 8);
+          if (byteLen <= capBytes) return spec;
+        }
+        return null;
+      }
+
+      function buildCodewords(text, spec) {
+        const bytes = new TextEncoder().encode(text);
+        const [ver, totalData, ecLen, numBlocks] = spec;
+        const ccBits = ver < 10 ? 8 : 16;
+        const bits = [];
+        const pushBits = (val, len) => {
+          for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1);
+        };
+
+        pushBits(0b0100, 4); // Byte mode
+        pushBits(bytes.length, ccBits);
+        for (const b of bytes) pushBits(b, 8);
+
+        const totalBits = totalData * 8;
+        const term = Math.min(4, totalBits - bits.length);
+        pushBits(0, term);
+        while (bits.length % 8 !== 0) bits.push(0);
+
+        const padBytes = [0xec, 0x11];
+        let pIdx = 0;
+        while (bits.length < totalBits) {
+          pushBits(padBytes[pIdx % 2], 8);
+          pIdx++;
+        }
+
+        const dataCw = [];
+        for (let i = 0; i < bits.length; i += 8) {
+          let v = 0;
+          for (let j = 0; j < 8; j++) v = (v << 1) | bits[i + j];
+          dataCw.push(v);
+        }
+
+        const b1 = Math.floor(totalData / numBlocks);
+        const rem = totalData % numBlocks;
+        const dBlocks = [];
+        const eBlocks = [];
+        let offset = 0;
+        for (let b = 0; b < numBlocks; b++) {
+          const len = b1 + (b >= numBlocks - rem ? 1 : 0);
+          const slice = dataCw.slice(offset, offset + len);
+          offset += len;
+          dBlocks.push(slice);
+          eBlocks.push(rsEncode(slice, ecLen));
+        }
+
+        const finalCw = [];
+        const maxD = Math.max(...dBlocks.map((x) => x.length));
+        for (let i = 0; i < maxD; i++) {
+          for (const blk of dBlocks) if (i < blk.length) finalCw.push(blk[i]);
+        }
+        for (let i = 0; i < ecLen; i++) {
+          for (const blk of eBlocks) finalCw.push(blk[i]);
+        }
+        return finalCw;
+      }
+
+      function createMatrix(ver) {
+        const size = ver * 4 + 17;
+        const grid = Array.from({ length: size }, () => Array(size).fill(null));
+        const reserved = Array.from({ length: size }, () => Array(size).fill(false));
+
+        function putFinder(r0, c0) {
+          for (let r = -1; r <= 7; r++) {
+            for (let c = -1; c <= 7; c++) {
+              const rr = r0 + r;
+              const cc = c0 + c;
+              if (rr < 0 || rr >= size || cc < 0 || cc >= size) continue;
+              const inBox = r >= 0 && r <= 6 && c >= 0 && c <= 6;
+              const border = r === 0 || r === 6 || c === 0 || c === 6;
+              const center = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+              grid[rr][cc] = inBox && (border || center) ? 1 : 0;
+              reserved[rr][cc] = true;
+            }
+          }
+        }
+
+        putFinder(0, 0);
+        putFinder(0, size - 7);
+        putFinder(size - 7, 0);
+
+        if (ver >= 2) {
+          const alignPos = ver === 2 ? [6, 18] : ver === 3 ? [6, 22] : ver === 4 ? [6, 26] : ver === 5 ? [6, 30] : [6, 34];
+          for (const ar of alignPos) {
+            for (const ac of alignPos) {
+              if (reserved[ar][ac]) continue;
+              for (let dr = -2; dr <= 2; dr++) {
+                for (let dc = -2; dc <= 2; dc++) {
+                  const isDark = Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0);
+                  grid[ar + dr][ac + dc] = isDark ? 1 : 0;
+                  reserved[ar + dr][ac + dc] = true;
+                }
+              }
+            }
+          }
+        }
+
+        for (let i = 8; i < size - 8; i++) {
+          if (!reserved[6][i]) {
+            grid[6][i] = i % 2 === 0 ? 1 : 0;
+            reserved[6][i] = true;
+          }
+          if (!reserved[i][6]) {
+            grid[i][6] = i % 2 === 0 ? 1 : 0;
+            reserved[i][6] = true;
+          }
+        }
+
+        grid[size - 8][8] = 1;
+        reserved[size - 8][8] = true;
+
+        // Reservar celdas de formato (ECC L = 01, mask 0)
+        for (let i = 0; i < 9; i++) {
+          if (i < size) {
+            reserved[8][i] = true;
+            reserved[i][8] = true;
+          }
+        }
+        for (let i = 0; i < 8; i++) {
+          reserved[8][size - 1 - i] = true;
+          reserved[size - 1 - i][8] = true;
+        }
+
+        return { grid, reserved, size };
+      }
+
+      function placeBits(grid, reserved, size, codewords) {
+        const bits = [];
+        for (const cw of codewords) {
+          for (let i = 7; i >= 0; i--) bits.push((cw >> i) & 1);
+        }
+        let bitIdx = 0;
+        let upward = true;
+
+        for (let col = size - 1; col >= 1; col -= 2) {
+          if (col === 6) col = 5;
+          for (let step = 0; step < size; step++) {
+            const row = upward ? size - 1 - step : step;
+            for (let cOff = 0; cOff <= 1; cOff++) {
+              const c = col - cOff;
+              if (reserved[row][c]) continue;
+              const rawBit = bitIdx < bits.length ? bits[bitIdx++] : 0;
+              // Máscara 0: (row + col) % 2 === 0
+              const masked = (row + c) % 2 === 0 ? rawBit ^ 1 : rawBit;
+              grid[row][c] = masked;
+            }
+          }
+          upward = !upward;
+        }
+
+        // Escribir bits de formato para ECC L (01) y máscara 0 (000) -> 111011111000100
+        const fmt = [1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0];
+        const aroundA = [[0, 8], [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [7, 8], [8, 8], [8, 7], [8, 5], [8, 4], [8, 3], [8, 2], [8, 1], [8, 0]];
+        for (let i = 0; i < 15; i++) {
+          const [r, c] = aroundA[i];
+          grid[r][c] = fmt[i];
+        }
+        for (let i = 0; i < 8; i++) {
+          grid[size - 1 - i][8] = fmt[i];
+        }
+        for (let i = 0; i < 7; i++) {
+          grid[8][size - 7 + i] = fmt[8 + i];
+        }
+      }
+
+      return function drawQr(ctx, text, x, y, size) {
+        const spec = chooseSpec(new TextEncoder().encode(text).length);
+        if (!spec) return false;
+        const cws = buildCodewords(text, spec);
+        const { grid, size: modules } = createMatrix(spec[0]);
+        placeBits(grid, null, modules, cws);
+
+        const quiet = 2;
+        const totalMod = modules + quiet * 2;
+        const cell = size / totalMod;
+
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, y, size, size);
+        ctx.fillStyle = '#0f172a';
+
+        for (let r = 0; r < modules; r++) {
+          for (let c = 0; c < modules; c++) {
+            if (grid[r][c]) {
+              const px = Math.floor(x + (c + quiet) * cell);
+              const py = Math.floor(y + (r + quiet) * cell);
+              const pw = Math.ceil(cell);
+              const ph = Math.ceil(cell);
+              ctx.fillRect(px, py, pw, ph);
+            }
+          }
+        }
+        ctx.restore();
+        return true;
+      };
+    })();
+
+    const cardCanvas = document.getElementById('card-canvas');
+    const cardCtx = cardCanvas.getContext('2d');
+    const cardTitle = document.getElementById('card-title');
+    const cardSubtitle = document.getElementById('card-subtitle');
+    const cardDetails = document.getElementById('card-details');
+    const cardQr = document.getElementById('card-qr');
+    const cardColor = document.getElementById('card-color');
+    const cardAccent = document.getElementById('card-accent');
+    const cardDownloadBtn = document.getElementById('card-download-btn');
+    const cardStatus = document.getElementById('card-status');
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = String(text || '').split(/\s+/).filter(Boolean);
+      let line = '';
+      let curY = y;
+      for (const word of words) {
+        const test = line ? line + ' ' + word : word;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          ctx.fillText(line, x, curY);
+          line = word;
+          curY += lineHeight;
+        } else {
+          line = test;
+        }
+      }
+      if (line) ctx.fillText(line, x, curY);
+      else curY -= lineHeight;
+      return curY;
+    }
+
+    function renderCard() {
+      const w = cardCanvas.width;
+      const h = cardCanvas.height;
+
+      cardCtx.clearRect(0, 0, w, h);
+      cardCtx.fillStyle = '#ffffff';
+      cardCtx.fillRect(0, 0, w, h);
+
+      cardCtx.fillStyle = cardColor.value;
+      cardCtx.fillRect(0, 0, 26, h);
+
+      cardCtx.fillStyle = cardAccent.value;
+      cardCtx.fillRect(26, 0, 8, h);
+
+      cardCtx.fillStyle = cardColor.value;
+      cardCtx.font = 'bold 34px system-ui, sans-serif';
+      const afterTitle = wrapText(cardCtx, cardTitle.value || 'Título', 64, 82, 460, 42);
+
+      cardCtx.fillStyle = cardAccent.value;
+      cardCtx.font = '600 20px system-ui, sans-serif';
+      const afterSub = wrapText(cardCtx, cardSubtitle.value || '', 64, afterTitle + 34, 460, 28);
+
+      cardCtx.fillStyle = '#334155';
+      cardCtx.font = '400 18px system-ui, sans-serif';
+      wrapText(cardCtx, cardDetails.value || '', 64, afterSub + 42, 460, 26);
+
+      const qrSize = 190;
+      const qrX = w - 235;
+      const qrY = h / 2 - qrSize / 2;
+      const qrText = (cardQr.value || 'https://ejemplo.com').trim();
+
+      const ok = QR_LOCAL(cardCtx, qrText, qrX, qrY, qrSize);
+      if (!ok) {
+        cardCtx.strokeStyle = '#94a3b8';
+        cardCtx.strokeRect(qrX, qrY, qrSize, qrSize);
+        cardCtx.fillStyle = '#64748b';
+        cardCtx.font = '14px system-ui, sans-serif';
+        cardCtx.fillText('Texto muy largo', qrX + 42, qrY + qrSize / 2);
+      }
+    }
+
+    [cardTitle, cardSubtitle, cardDetails, cardQr, cardColor, cardAccent].forEach((el) => {
+      el.addEventListener('input', renderCard);
+    });
+
+    cardDownloadBtn.addEventListener('click', () => {
+      cardCanvas.toBlob((blob) => {
+        if (!blob) return;
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = filename;
+        a.download = 'ficha-tarjeta.png';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 1500);
-      }
+        cardStatus.textContent = 'PNG descargado con QR local.';
+      }, 'image/png');
+    });
 
-      // --- MÓDULO 1: PDF + EVIDENCIAS ---
-      const pdfInput = document.getElementById('pdf-files');
-      const pdfQueueEl = document.getElementById('pdf-queue');
-      const pdfMergeBtn = document.getElementById('pdf-merge-btn');
-      const pdfClearBtn = document.getElementById('pdf-clear-btn');
-      const pdfWatermark = document.getElementById('pdf-watermark');
-      const pdfStatus = document.getElementById('pdf-status');
-
-      let pdfItems = [];
-
-      function renderPdfQueue() {
-        pdfQueueEl.innerHTML = '';
-        pdfItems.forEach((file, idx) => {
-          const li = document.createElement('li');
-          li.className = 'file-item';
-
-          const nameSpan = document.createElement('span');
-          nameSpan.textContent = (idx + 1) + '. ' + file.name;
-
-          const controls = document.createElement('span');
-          controls.className = 'row';
-          controls.style.gap = '0.25rem';
-
-          const upBtn = document.createElement('button');
-          upBtn.type = 'button';
-          upBtn.className = 'mini-btn';
-          upBtn.textContent = '↑';
-          upBtn.disabled = idx === 0;
-          upBtn.addEventListener('click', () => {
-            [pdfItems[idx], pdfItems[idx - 1]] = [pdfItems[idx - 1], pdfItems[idx]];
-            renderPdfQueue();
-          });
-
-          const downBtn = document.createElement('button');
-          downBtn.type = 'button';
-          downBtn.className = 'mini-btn';
-          downBtn.textContent = '↓';
-          downBtn.disabled = idx === pdfItems.length - 1;
-          downBtn.addEventListener('click', () => {
-            [pdfItems[idx], pdfItems[idx + 1]] = [pdfItems[idx + 1], pdfItems[idx]];
-            renderPdfQueue();
-          });
-
-          const delBtn = document.createElement('button');
-          delBtn.type = 'button';
-          delBtn.className = 'mini-btn del';
-          delBtn.textContent = '✕';
-          delBtn.addEventListener('click', () => {
-            pdfItems.splice(idx, 1);
-            renderPdfQueue();
-          });
-
-          controls.append(upBtn, downBtn, delBtn);
-          li.append(nameSpan, controls);
-          pdfQueueEl.appendChild(li);
-        });
-        pdfMergeBtn.disabled = pdfItems.length === 0;
-      }
-
-      pdfInput.addEventListener('change', (e) => {
-        if (e.target.files && e.target.files.length > 0) {
-          pdfItems.push(...Array.from(e.target.files));
-          renderPdfQueue();
-          pdfStatus.textContent = '';
-          pdfInput.value = '';
-        }
-      });
-
-      pdfClearBtn.addEventListener('click', () => {
-        pdfItems = [];
-        renderPdfQueue();
-        pdfStatus.textContent = '';
-      });
-
-      pdfMergeBtn.addEventListener('click', async () => {
-        pdfMergeBtn.disabled = true;
-        pdfStatus.textContent = 'Cargando motor PDF...';
-        try {
-          await loadScriptOnce('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js');
-          const { PDFDocument, rgb, StandardFonts } = window.PDFLib;
-          const outPdf = await PDFDocument.create();
-          const font = await outPdf.embedFont(StandardFonts.HelveticaBold);
-
-          for (const file of pdfItems) {
-            pdfStatus.textContent = 'Procesando ' + file.name + '...';
-            const bytes = await file.arrayBuffer();
-
-            if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-              const srcPdf = await PDFDocument.load(bytes);
-              const copied = await outPdf.copyPages(srcPdf, srcPdf.getPageIndices());
-              copied.forEach((p) => outPdf.addPage(p));
-            } else if (file.type === 'image/png' || file.type === 'image/jpeg') {
-              const img = file.type === 'image/png'
-                ? await outPdf.embedPng(bytes)
-                : await outPdf.embedJpg(bytes);
-              const page = outPdf.addPage([612, 792]);
-              const margin = 36;
-              const maxW = page.getWidth() - margin * 2;
-              const maxH = page.getHeight() - margin * 2;
-              const scale = Math.min(maxW / img.width, maxH / img.height, 1);
-              const w = img.width * scale;
-              const h = img.height * scale;
-              page.drawImage(img, {
-                x: (page.getWidth() - w) / 2,
-                y: (page.getHeight() - h) / 2,
-                width: w,
-                height: h
-              });
-            }
-          }
-
-          const note = pdfWatermark.value.trim();
-          if (note) {
-            outPdf.getPages().forEach((page, i) => {
-              page.drawText(note + '  |  Pág. ' + (i + 1), {
-                x: 36,
-                y: 18,
-                size: 9,
-                font,
-                color: rgb(0.4, 0.45, 0.55)
-              });
-            });
-          }
-
-          const mergedBytes = await outPdf.save();
-          triggerDownload(new Blob([mergedBytes], { type: 'application/pdf' }), 'documento-combinado.pdf');
-          pdfStatus.textContent = 'Listo: PDF descargado.';
-        } catch (err) {
-          pdfStatus.textContent = 'Error: ' + err.message;
-        } finally {
-          pdfMergeBtn.disabled = pdfItems.length === 0;
-        }
-      });
-
-      // --- MÓDULO 2: FICHA / TARJETA + QR ---
-      const cardCanvas = document.getElementById('card-canvas');
-      const cardCtx = cardCanvas.getContext('2d');
-      const cardTitle = document.getElementById('card-title');
-      const cardSubtitle = document.getElementById('card-subtitle');
-      const cardDetails = document.getElementById('card-details');
-      const cardQr = document.getElementById('card-qr');
-      const cardColor = document.getElementById('card-color');
-      const cardAccent = document.getElementById('card-accent');
-      const cardDownloadBtn = document.getElementById('card-download-btn');
-      const cardStatus = document.getElementById('card-status');
-
-      let qrDrawSeq = 0;
-
-      function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-        const words = String(text || '').split(/\s+/).filter(Boolean);
-        let line = '';
-        let curY = y;
-        for (const word of words) {
-          const test = line ? line + ' ' + word : word;
-          if (ctx.measureText(test).width > maxWidth && line) {
-            ctx.fillText(line, x, curY);
-            line = word;
-            curY += lineHeight;
-          } else {
-            line = test;
-          }
-        }
-        if (line) {
-          ctx.fillText(line, x, curY);
-        } else {
-          curY -= lineHeight;
-        }
-        return curY;
-      }
-
-      function drawFallbackQrBox(x, y, size, label) {
-        cardCtx.save();
-        cardCtx.strokeStyle = '#94a3b8';
-        cardCtx.lineWidth = 2;
-        cardCtx.strokeRect(x, y, size, size);
-        cardCtx.fillStyle = '#64748b';
-        cardCtx.font = '14px system-ui, sans-serif';
-        cardCtx.textAlign = 'center';
-        cardCtx.fillText(label, x + size / 2, y + size / 2 + 5);
-        cardCtx.restore();
-      }
-
-      window.renderCard = async function () {
-        const seq = ++qrDrawSeq;
-        const w = cardCanvas.width;
-        const h = cardCanvas.height;
-
-        cardCtx.clearRect(0, 0, w, h);
-        cardCtx.fillStyle = '#ffffff';
-        cardCtx.fillRect(0, 0, w, h);
-
-        cardCtx.fillStyle = cardColor.value;
-        cardCtx.fillRect(0, 0, 26, h);
-
-        cardCtx.fillStyle = cardAccent.value;
-        cardCtx.fillRect(26, 0, 8, h);
-
-        cardCtx.fillStyle = cardColor.value;
-        cardCtx.font = 'bold 34px system-ui, sans-serif';
-        const afterTitle = wrapText(cardCtx, cardTitle.value || 'Título', 64, 82, 460, 42);
-
-        cardCtx.fillStyle = cardAccent.value;
-        cardCtx.font = '600 20px system-ui, sans-serif';
-        const afterSub = wrapText(cardCtx, cardSubtitle.value || '', 64, afterTitle + 34, 460, 28);
-
-        cardCtx.fillStyle = '#334155';
-        cardCtx.font = '400 18px system-ui, sans-serif';
-        wrapText(cardCtx, cardDetails.value || '', 64, afterSub + 42, 460, 26);
-
-        const qrSize = 190;
-        const qrX = w - 235;
-        const qrY = h / 2 - qrSize / 2;
-        const qrText = (cardQr.value || 'https://ejemplo.com').trim();
-
-        drawFallbackQrBox(qrX, qrY, qrSize, 'Generando QR...');
-
-        try {
-          await loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js');
-          if (seq !== qrDrawSeq) return;
-          if (!window.QRCode || typeof window.QRCode.toCanvas !== 'function') {
-            drawFallbackQrBox(qrX, qrY, qrSize, 'QR no disponible');
-            return;
-          }
-          const qrTmp = document.createElement('canvas');
-          await window.QRCode.toCanvas(qrTmp, qrText, { width: qrSize, margin: 1 });
-          if (seq !== qrDrawSeq) return;
-          cardCtx.clearRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
-          cardCtx.fillStyle = '#ffffff';
-          cardCtx.fillRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
-          cardCtx.drawImage(qrTmp, qrX, qrY, qrSize, qrSize);
-        } catch (_) {
-          if (seq !== qrDrawSeq) return;
-          cardCtx.clearRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
-          cardCtx.fillStyle = '#ffffff';
-          cardCtx.fillRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
-          drawFallbackQrBox(qrX, qrY, qrSize, 'QR sin red');
-        }
-      };
-
-      [cardTitle, cardSubtitle, cardDetails, cardQr, cardColor, cardAccent].forEach((el) => {
-        el.addEventListener('input', window.renderCard);
-      });
-
-      cardDownloadBtn.addEventListener('click', () => {
-        cardCanvas.toBlob((blob) => {
-          if (blob) {
-            triggerDownload(blob, 'ficha-tarjeta.png');
-            cardStatus.textContent = 'PNG descargado.';
-          }
-        }, 'image/png');
-      });
-
-      window.renderCard();
-
-      // --- MÓDULO 3: AUDIO SFX 8-BIT ---
-      const sfxPreset = document.getElementById('sfx-preset');
-      const sfxWave = document.getElementById('sfx-wave');
-      const sfxStartFreq = document.getElementById('sfx-start-freq');
-      const sfxEndFreq = document.getElementById('sfx-end-freq');
-      const sfxDuration = document.getElementById('sfx-duration');
-      const sfxPlayBtn = document.getElementById('sfx-play-btn');
-      const sfxWavBtn = document.getElementById('sfx-wav-btn');
-      const sfxStatus = document.getElementById('sfx-status');
-
-      const presets = {
-        coin: { wave: 'square', start: 980, end: 1480, dur: 0.16 },
-        laser: { wave: 'sawtooth', start: 1200, end: 140, dur: 0.22 },
-        jump: { wave: 'square', start: 220, end: 760, dur: 0.25 },
-        explosion: { wave: 'triangle', start: 180, end: 45, dur: 0.45 }
-      };
-
-      sfxPreset.addEventListener('change', () => {
-        const p = presets[sfxPreset.value];
-        if (!p) return;
-        sfxWave.value = p.wave;
-        sfxStartFreq.value = p.start;
-        sfxEndFreq.value = p.end;
-        sfxDuration.value = p.dur;
-      });
-
-      async function renderSfxBuffer() {
-        const dur = Math.max(0.05, Math.min(2, Number(sfxDuration.value) || 0.25));
-        const f0 = Math.max(40, Math.min(3000, Number(sfxStartFreq.value) || 440));
-        const f1 = Math.max(40, Math.min(3000, Number(sfxEndFreq.value) || 880));
-        const sampleRate = 44100;
-        const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-        const ctx = new OfflineCtx(1, Math.ceil(sampleRate * dur), sampleRate);
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = sfxWave.value;
-        osc.frequency.setValueAtTime(f0, 0);
-        osc.frequency.exponentialRampToValueAtTime(f1, dur);
-
-        gain.gain.setValueAtTime(0.25, 0);
-        gain.gain.exponentialRampToValueAtTime(0.001, dur);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(0);
-        osc.stop(dur);
-        return ctx.startRendering();
-      }
-
-      function audioBufferToWav(buffer) {
-        const samples = buffer.getChannelData(0);
-        const len = samples.length * 2;
-        const out = new ArrayBuffer(44 + len);
-        const view = new DataView(out);
-
-        const writeStr = (off, str) => {
-          for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i));
-        };
-
-        writeStr(0, 'RIFF');
-        view.setUint32(4, 36 + len, true);
-        writeStr(8, 'WAVE');
-        writeStr(12, 'fmt ');
-        view.setUint32(16, 16, true);
-        view.setUint16(20, 1, true);
-        view.setUint16(22, 1, true);
-        view.setUint32(24, buffer.sampleRate, true);
-        view.setUint32(28, buffer.sampleRate * 2, true);
-        view.setUint16(32, 2, true);
-        view.setUint16(34, 16, true);
-        writeStr(36, 'data');
-        view.setUint32(40, len, true);
-
-        let offset = 44;
-        for (let i = 0; i < samples.length; i++, offset += 2) {
-          const s = Math.max(-1, Math.min(1, samples[i]));
-          view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
-        }
-        return new Blob([out], { type: 'audio/wav' });
-      }
-
-      sfxPlayBtn.addEventListener('click', async () => {
-        try {
-          const rendered = await renderSfxBuffer();
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          const playCtx = new AudioCtx();
-          if (playCtx.state === 'suspended') await playCtx.resume();
-          const src = playCtx.createBufferSource();
-          src.buffer = rendered;
-          src.connect(playCtx.destination);
-          src.start();
-          src.onended = () => playCtx.close();
-          sfxStatus.textContent = 'Reproducido.';
-        } catch (err) {
-          sfxStatus.textContent = 'Error de audio: ' + err.message;
-        }
-      });
-
-      sfxWavBtn.addEventListener('click', async () => {
-        try {
-          const rendered = await renderSfxBuffer();
-          const wavBlob = audioBufferToWav(rendered);
-          triggerDownload(wavBlob, 'sfx-' + (sfxPreset.value || 'retro') + '.wav');
-          sfxStatus.textContent = 'Archivo .WAV descargado.';
-        } catch (err) {
-          sfxStatus.textContent = 'Error al exportar: ' + err.message;
-        }
-      });
-    })();
+    renderCard();
   </script>
 </body>
 </html>
