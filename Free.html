@@ -66,17 +66,17 @@
 
     .tab-btn {
       background: var(--panel);
-      color: var(--muted);
+      color: var(--text);
       border: 1px solid var(--border);
-      padding: 0.5rem 0.9rem;
+      padding: 0.55rem 0.95rem;
       border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
       font-size: 0.9rem;
+      touch-action: manipulation;
     }
 
     .tab-btn:hover {
-      color: var(--text);
       border-color: var(--accent);
     }
 
@@ -168,6 +168,7 @@
       font-weight: 700;
       cursor: pointer;
       font-size: 0.92rem;
+      touch-action: manipulation;
     }
 
     .btn:hover { filter: brightness(1.08); }
@@ -256,9 +257,9 @@
       <span class="badge">100% en tu navegador · Sin subir archivos</span>
     </div>
     <nav id="tabs-nav" aria-label="Herramientas">
-      <button type="button" class="tab-btn active" data-tab="pdf">1. PDF y Evidencias</button>
-      <button type="button" class="tab-btn" data-tab="card">2. Ficha / Tarjeta + QR</button>
-      <button type="button" class="tab-btn" data-tab="sfx">3. Audio SFX 8-Bit</button>
+      <button type="button" id="btn-tab-pdf" class="tab-btn active" data-tab="pdf" onclick="window.abrirPestana('pdf')">1. PDF y Evidencias</button>
+      <button type="button" id="btn-tab-card" class="tab-btn" data-tab="card" onclick="window.abrirPestana('card')">2. Ficha / Tarjeta + QR</button>
+      <button type="button" id="btn-tab-sfx" class="tab-btn" data-tab="sfx" onclick="window.abrirPestana('sfx')">3. Audio SFX 8-Bit</button>
     </nav>
   </header>
 
@@ -295,7 +296,7 @@
     </section>
 
     <!-- MÓDULO 2: FICHA / TARJETA + QR -->
-    <section id="tab-card" class="tool-panel">
+    <section id="tab-card" class="tool-panel" hidden style="display:none;">
       <h2>Generador Rápido de Ficha / Tarjeta con QR</h2>
       <p class="hint">Crea una tarjeta o ficha visual al instante y descárgala como PNG.</p>
 
@@ -335,7 +336,7 @@
     </section>
 
     <!-- MÓDULO 3: AUDIO SFX 8-BIT -->
-    <section id="tab-sfx" class="tool-panel">
+    <section id="tab-sfx" class="tool-panel" hidden style="display:none;">
       <h2>Sintetizador de Efectos 8-Bit (Web Audio)</h2>
       <p class="hint">Genera sonidos retro en el navegador y descárgalos en formato WAV sin depender de librerías externas.</p>
 
@@ -384,24 +385,31 @@
 
   <script>
     (function () {
-      // --- NAVEGACIÓN ENTRE PESTAÑAS (delegación en nav para que nunca falle) ---
-      const tabsNav = document.getElementById('tabs-nav');
-      const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
-      const panels = Array.from(document.querySelectorAll('.tool-panel'));
+      const validTabs = ['pdf', 'card', 'sfx'];
 
-      function switchTab(target) {
-        tabBtns.forEach((b) => b.classList.toggle('active', b.dataset.tab === target));
-        panels.forEach((p) => p.classList.toggle('active', p.id === 'tab-' + target));
-        if (target === 'card') {
-          renderCard();
+      window.abrirPestana = function (target) {
+        if (!validTabs.includes(target)) return;
+
+        validTabs.forEach((name) => {
+          const btn = document.getElementById('btn-tab-' + name);
+          const panel = document.getElementById('tab-' + name);
+          const isSelected = name === target;
+
+          if (btn) {
+            btn.classList.toggle('active', isSelected);
+            btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+          }
+          if (panel) {
+            panel.classList.toggle('active', isSelected);
+            panel.hidden = !isSelected;
+            panel.style.display = isSelected ? 'block' : 'none';
+          }
+        });
+
+        if (target === 'card' && typeof window.renderCard === 'function') {
+          window.renderCard();
         }
-      }
-
-      tabsNav.addEventListener('click', (e) => {
-        const btn = e.target.closest('.tab-btn');
-        if (!btn) return;
-        switchTab(btn.dataset.tab);
-      });
+      };
 
       // --- CARGADOR BAJO DEMANDA DE SCRIPTS ---
       const loadedScripts = new Map();
@@ -612,7 +620,7 @@
         cardCtx.restore();
       }
 
-      async function renderCard() {
+      window.renderCard = async function () {
         const seq = ++qrDrawSeq;
         const w = cardCanvas.width;
         const h = cardCanvas.height;
@@ -667,10 +675,10 @@
           cardCtx.fillRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4);
           drawFallbackQrBox(qrX, qrY, qrSize, 'QR sin red');
         }
-      }
+      };
 
       [cardTitle, cardSubtitle, cardDetails, cardQr, cardColor, cardAccent].forEach((el) => {
-        el.addEventListener('input', renderCard);
+        el.addEventListener('input', window.renderCard);
       });
 
       cardDownloadBtn.addEventListener('click', () => {
@@ -682,7 +690,7 @@
         }, 'image/png');
       });
 
-      renderCard();
+      window.renderCard();
 
       // --- MÓDULO 3: AUDIO SFX 8-BIT ---
       const sfxPreset = document.getElementById('sfx-preset');
